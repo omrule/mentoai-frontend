@@ -52,11 +52,12 @@ function ScheduleCalendar() {
     const rows = [];
     let days = [];
     let day = startDate;
-    let formattedDate = '';
+    // let formattedDate = ''; // <-- 이 줄(기존 60줄)이 삭제되었습니다.
 
     while (day <= endDate) {
       for (let i = 0; i < 7; i++) {
-        formattedDate = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+        // 'const'가 추가되었습니다. (기존 64줄)
+        const formattedDate = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
         const isCurrentMonth = day.getMonth() === currentDate.getMonth();
         const isToday = day.toDateString() === new Date(2025, 10, 4).toDateString(); // '오늘' 날짜 하이라이트
 

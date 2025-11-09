@@ -51,7 +51,7 @@ function PromptInput() {
     }
 
     // 2. 프롬프트 엔지니어링 실행 및 콘솔 출력
-    const finalPrompt = createFinalPrompt(prompt, fakeUserProfile);
+    //const finalPrompt = createFinalPrompt(prompt, fakeUserProfile);
     // createFinalPrompt 함수 내부에서도 콘솔 출력이 있지만, 여기서 한 번 더 명시적으로 찍어줍니다.
     // console.log("--- 최종 생성된 프롬프트 ---");
     // console.log(finalPrompt);
