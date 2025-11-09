@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './Page.css';
 import { checkGuardrails } from '../utils/guardrails';
-import { createFinalPrompt } from '../utils/prompt-engineering';
+//import { createFinalPrompt } from '../utils/prompt-engineering';
 
 // 가짜 AI 응답 데이터 (Swagger 문서 참고)
 const sampleResults = [
@@ -27,13 +27,13 @@ const sampleResults = [
 ];
 
 // 가짜 사용자 프로필 데이터 (나중엔 AuthContext에서 가져옴)
-const fakeUserProfile = {
+/*const fakeUserProfile = {
   university: '멘토대학교',
   major: '컴퓨터공학과',
   grade: '3',
   interests: ['AI', '데이터 분석', '백엔드 개발']
 };
-
+*/
 
 function PromptInput() {
   const [prompt, setPrompt] = useState('컴퓨터공학과 3학년 학생입니다. AI 분야로 취업하고 싶은데, 스펙을 쌓기 위해 참여하면 좋을 활동들을 추천해주세요.');
