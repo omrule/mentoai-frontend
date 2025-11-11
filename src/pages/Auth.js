@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../contexts/AuthContext';
-import { loginWithGoogle } from '../api/authApi'; // 가짜 API 호출
+import { loginWithGoogle } from '../api/authApi'; // 실제 API 호출
 import './Page.css';
 
 function AuthPage() {
@@ -13,21 +13,26 @@ function AuthPage() {
     onSuccess: async (tokenResponse) => {
       setIsLoading(true);
       try {
-        // 실제로는 access_token을 백엔드로 보내지만,
-        // 여기서는 모킹을 위해 성공 객체 자체를 가짜 API로 넘깁니다.
+        // [수정] 이제 authApi.js의 '진짜' 백엔드 호출 함수를 사용
         const response = await loginWithGoogle(tokenResponse);
 
         if (response.success) {
-          // 가짜 API가 반환한 사용자 정보로 로그인 처리
+          // AuthContext의 login 함수로 실제 유저 데이터 전달
           login(response.data);
+          
+          // [버그 수정] 성공 시에도 isLoading을 false로 변경
+          // (페이지 이동은 AuthContext가 처리)
+          setIsLoading(false); 
+
         } else {
-          // 가짜 API가 실패를 반환했을 경우 (테스트용)
-          alert('로그인에 실패했습니다.');
+          // 백엔드 API가 { success: false }를 반환한 경우
+          alert('로그인에 실패했습니다. (서버 응답 오류)');
           setIsLoading(false);
         }
       } catch (error) {
+        // axios 요청 자체가 실패한 경우 (CORS, 네트워크 오류 등)
         console.error("로그인 처리 중 에러 발생:", error);
-        alert('로그인 중 오류가 발생했습니다.');
+        alert('로그인 중 오류가 발생했습니다. (네트워크 또는 CORS)');
         setIsLoading(false);
       }
     },
@@ -35,7 +40,7 @@ function AuthPage() {
     onError: (error) => {
       console.error('Google 로그인 실패:', error);
       alert('Google 로그인에 실패했습니다. 다시 시도해주세요.');
-      setIsLoading(false);
+      setIsLoading(false); // isLoading을 false로 설정 (이미 false일 수 있지만, 확실하게)
     },
   });
 
