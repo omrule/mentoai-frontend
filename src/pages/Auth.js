@@ -1,49 +1,19 @@
-import React, { useState } from 'react';
-import { useGoogleLogin } from '@react-oauth/google';
-import { useAuth } from '../contexts/AuthContext';
-import { loginWithGoogle } from '../api/authApi'; // 실제 API 호출
+// src/pages/Auth.js
+import React from 'react';
+// [삭제] useGoogleLogin, useAuth, loginWithGoogle, useState 모두 삭제
 import './Page.css';
 
+// 백엔드 서버 주소
+const API_BASE_URL = 'https://mentoai.onrender.com';
+
+// 백엔드의 Google OAuth2 시작 주소
+const GOOGLE_LOGIN_START_URL = `${API_BASE_URL}/auth/google/start`;
+
 function AuthPage() {
-  const { login } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleGoogleLogin = useGoogleLogin({
-    // Google 로그인 성공 시 실행되는 함수
-    onSuccess: async (tokenResponse) => {
-      setIsLoading(true);
-      try {
-        // [수정] 이제 authApi.js의 '진짜' 백엔드 호출 함수를 사용
-        const response = await loginWithGoogle(tokenResponse);
-
-        if (response.success) {
-          // AuthContext의 login 함수로 실제 유저 데이터 전달
-          login(response.data);
-          
-          // [버그 수정] 성공 시에도 isLoading을 false로 변경
-          // (페이지 이동은 AuthContext가 처리)
-          setIsLoading(false); 
-
-        } else {
-          // 백엔드 API가 { success: false }를 반환한 경우
-          alert('로그인에 실패했습니다. (서버 응답 오류)');
-          setIsLoading(false);
-        }
-      } catch (error) {
-        // axios 요청 자체가 실패한 경우 (CORS, 네트워크 오류 등)
-        console.error("로그인 처리 중 에러 발생:", error);
-        alert('로그인 중 오류가 발생했습니다. (네트워크 또는 CORS)');
-        setIsLoading(false);
-      }
-    },
-    // Google 로그인 실패 시
-    onError: (error) => {
-      console.error('Google 로그인 실패:', error);
-      alert('Google 로그인에 실패했습니다. 다시 시도해주세요.');
-      setIsLoading(false); // isLoading을 false로 설정 (이미 false일 수 있지만, 확실하게)
-    },
-  });
-
+  // [수정]
+  // 'useGoogleLogin' 훅 대신, 백엔드 주소로 연결되는 단순한 <a> 태그를 사용합니다.
+  // 로딩 상태(isLoading)는 이제 백엔드 리다이렉션 과정에서 처리되므로
+  // 프론트엔드에서는 버튼 클릭 시 로딩 상태가 필요 없습니다.
   return (
     <div className="auth-container">
       <div className="auth-card">
@@ -52,12 +22,13 @@ function AuthPage() {
           AI와 함께 당신의 진로를 설계하고<br />
           맞춤형 활동을 추천받아 보세요.
         </p>
-        <button 
-          className="google-login-button" 
-          onClick={() => !isLoading && handleGoogleLogin()}
-          disabled={isLoading}
-        >
-          {isLoading ? '로그인 중...' : (
+        
+        {/* 버튼을 <a> 태그로 감싸서 백엔드 로그인 페이지로 이동 */}
+        <a href={GOOGLE_LOGIN_START_URL} style={{ textDecoration: 'none' }}>
+          <button 
+            className="google-login-button" 
+            disabled={false} // 항상 활성화
+          >
             <>
               <svg className="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -67,8 +38,9 @@ function AuthPage() {
               </svg>
               Google 계정으로 시작하기
             </>
-          )}
-        </button>
+          </button>
+        </a>
+
         <p className="auth-helper-text">
           계속 진행하면 멘토아이의 서비스 이용약관 및<br/>개인정보 처리방침에 동의하는 것으로 간주됩니다.
         </p>

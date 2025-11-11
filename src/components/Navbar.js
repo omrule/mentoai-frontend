@@ -1,15 +1,17 @@
+// src/components/Navbar.js
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import './Navbar.css';
-import { useAuth } from '../contexts/AuthContext'; // AuthContext 사용
+import { useAuth } from '../contexts/AuthContext'; 
 
 function Navbar() {
-  const { logout } = useAuth(); // AuthContext에서 logout 함수 가져오기
+  const { logout } = useAuth(); 
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login'); // 로그아웃 후 로그인 페이지로 이동
+  // [수정] handleLogout을 async 함수로 변경
+  const handleLogout = async () => {
+    await logout(); // 백엔드 API가 호출될 때까지 기다림
+    navigate('/login'); 
   };
 
   return (
@@ -19,28 +21,22 @@ function Navbar() {
           <NavLink to="/prompt">멘토아이</NavLink>
         </div>
         <ul className="navbar-menu">
-          {/* 1. 활동 추천 목록 (위치 변경) */}
+          {/* (메뉴 항목은 이전과 동일...) */}
           <li>
             <NavLink to="/recommend" className={({ isActive }) => (isActive ? 'active' : '')}>
               📚 활동 추천 목록
             </NavLink>
           </li>
-          
-          {/* 2. 진로설계 AI (위치 변경) */}
           <li>
             <NavLink to="/prompt" className={({ isActive }) => (isActive ? 'active' : '')}>
               ✨ 진로설계 AI
             </NavLink>
           </li>
-
-          {/* 3. 활동 캘린더 */}
           <li>
             <NavLink to="/schedule" className={({ isActive }) => (isActive ? 'active' : '')}>
               📅 활동 캘린더
             </NavLink>
           </li>
-          
-          {/* 4. 마이페이지 */}
           <li>
             <NavLink to="/mypage" className={({ isActive }) => (isActive ? 'active' : '')}>
               👤 마이페이지
