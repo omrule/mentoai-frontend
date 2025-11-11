@@ -1,9 +1,7 @@
 // src/contexts/AuthContext.js
 import React, { createContext, useState, useContext, useEffect } from 'react';
-// [수정] loginWithGoogle 대신 checkCurrentUser, logoutUser 임포트
 import { checkCurrentUser, saveUserProfile, logoutUser } from '../api/authApi';
-// [오류 수정] 'apiClient'는 이 파일에서 직접 사용하지 않으므로 임포트 라인 삭제
-// import apiClient from '../api/apiClient'; 
+// [수정] apiClient 임포트 제거 (ESLint 오류 방지)
 
 // AuthContext 생성
 const AuthContext = createContext(null);
@@ -16,37 +14,40 @@ export const AuthProvider = ({ children }) => {
   // 컴포넌트 마운트 시, 백엔드에 '이미 로그인되어 있는지' 확인 (GET /auth/me)
   useEffect(() => {
     const verifyUser = async () => {
-      // (선택사항) sessionStorage에 저장된 토큰이 있다면 먼저 확인
-      const storedUser = sessionStorage.getItem('mentoUser');
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-        setLoading(false);
+      // [수정] sessionStorage 확인 로직 제거
+      //       -> /auth/me API 호출로 인증을 통일 (더욱 확실한 방법)
+      
+      // 백엔드 /auth/me 엔드포인트에 현재 사용자 정보 요청
+      const response = await checkCurrentUser();
+      if (response.success) {
+        // AuthResponse 스키마에 따라 유저 정보와 토큰을 분리
+        const userData = {
+          ...response.data.user,
+          accessToken: response.data.tokens.accessToken, // AuthResponse 스키마 참고
+          refreshToken: response.data.tokens.refreshToken, // AuthResponse 스키마 참고
+          profileComplete: response.data.user.profileComplete 
+        };
+        
+        setUser(userData);
+        sessionStorage.setItem('mentoUser', JSON.stringify(userData));
       } else {
-        // [신규] 백엔드 /auth/me 엔드포인트에 현재 사용자 정보 요청
-        const response = await checkCurrentUser();
-        if (response.success) {
-          // [신규] AuthResponse 스키마에 따라 유저 정보와 토큰을 분리
-          const userData = {
-            ...response.data.user,
-            accessToken: response.data.tokens.accessToken, // AuthResponse 스키마 참고
-            refreshToken: response.data.tokens.refreshToken, // AuthResponse 스키마 참고
-            // (백엔드가 User 스키마에 profileComplete를 준다고 가정)
-            profileComplete: response.data.user.profileComplete 
-          };
-          
-          setUser(userData);
-          sessionStorage.setItem('mentoUser', JSON.stringify(userData));
-        } else {
-          // /auth/me 실패 시 (로그인 안 됨)
-          setUser(null);
-          sessionStorage.removeItem('mentoUser');
-        }
+        // /auth/me 실패 시 (로그인 안 됨)
+        setUser(null);
+        sessionStorage.removeItem('mentoUser');
       }
+      
       setLoading(false); // 로딩 완료
     };
     
     verifyUser();
   }, []);
+
+  // [신규] OAuthCallback 페이지가 호출할 login 함수
+  // 이 함수는 API를 호출하지 않고, 전달받은 데이터를 상태에 저장합니다.
+  const login = (userData) => {
+    setUser(userData);
+    sessionStorage.setItem('mentoUser', JSON.stringify(userData));
+  };
   
   // 프로필 설정 완료 함수
   const completeProfile = async (profileData) => {
@@ -78,7 +79,8 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, logout, completeProfile, profileComplete: user?.profileComplete }}>
+    // [수정] value에 'login' 함수 추가
+    <AuthContext.Provider value={{ user, login, logout, completeProfile, profileComplete: user?.profileComplete }}>
       {children}
     </AuthContext.Provider>
   );

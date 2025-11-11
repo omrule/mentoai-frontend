@@ -2,15 +2,19 @@ import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import AuthPage from './pages/Auth';
-// [오류 수정] pagesS -> pages로 경로 수정
 import ProfileSetup from './pages/ProfileSetup';
 import PromptInput from './pages/PromptInput';
-// import PortfolioCalendar from './pages/PortfolioCalendar'; // 삭제됨
 import ActivityRecommender from './pages/ActivityRecommender';
 import ScheduleCalendar from './pages/ScheduleCalendar';
 import MyPage from './pages/MyPage';
 import { useAuth } from './contexts/AuthContext';
 import './App.css';
+// [신규] OAuthCallback 페이지 임포트
+import OAuthCallback from './pages/OAuthCallback'; 
+
+// [오류 수정]
+// 누락되었던 PrivateRoute, PublicRoute, ProfileSetupRoute 함수 정의를
+// 여기에 다시 추가합니다.
 
 // 로그인한 사용자만 접근 가능한 페이지를 감싸는 컴포넌트
 function PrivateRoute({ children }) {
@@ -78,13 +82,13 @@ function ProfileSetupRoute({ children }) {
   // 로그인했고 프로필 설정이 필요한 사용자
   return children;
 }
+// --- 여기까지 누락된 함수 정의 ---
 
 
 function App() {
   const { user, loading } = useAuth();
   const location = useLocation();
 
-  // 로딩 중에는 아무것도 표시하지 않음 (선택적)
   if (loading) {
     return (
       <div className="auth-container">
@@ -93,21 +97,21 @@ function App() {
     );
   }
 
-  // 로그인 페이지, 프로필 설정 페이지에서는 Navbar를 숨김
-  const showNavbar = user && user.profileComplete && location.pathname !== '/login' && location.pathname !== '/profile-setup';
+  // [수정] 콜백 경로에서도 Navbar 숨김
+  const showNavbar = user && user.profileComplete && 
+                     location.pathname !== '/login' && 
+                     location.pathname !== '/profile-setup' && 
+                     location.pathname !== '/oauth/callback';
   
-  // 로그인 상태에 따라 전체 클래스 변경
   const appClassName = showNavbar ? "App" : "App-unauthed";
 
   return (
     <div className={appClassName}>
       {showNavbar && <Navbar />}
       
-      {/* Navbar가 보일 땐 "content", 안 보일 땐 "content-full" 클래스를 사용하도록 변경 
-      */}
       <main className={showNavbar ? "content" : "content-full"}>
         <Routes>
-          {/* 1. 로그인/프로필 설정 경로는 로그인한 사용자가 접근하지 못하게 */}
+          {/* 1. 로그인/프로필 설정/콜백 경로 */}
           <Route path="/login" element={
             <PublicRoute>
               <AuthPage />
@@ -119,14 +123,16 @@ function App() {
             </ProfileSetupRoute>
           } />
 
-          {/* 2. 메인 서비스 경로는 로그인 + 프로필 설정 완료 사용자만 접근 가능하게 */}
-          {/* (순서 변경됨) 활동 추천 목록이 첫번째 */}
+          {/* [신규] 백엔드가 리디렉션할 콜백 경로. */}
+          <Route path="/oauth/callback" element={<OAuthCallback />} />
+
+
+          {/* 2. 메인 서비스 경로 */}
           <Route path="/recommend" element={
             <PrivateRoute>
               <ActivityRecommender />
             </PrivateRoute>
           } />
-          {/* (순서 변경됨) 진로 설계 AI가 두번째 */}
           <Route path="/prompt" element={
             <PrivateRoute>
               <PromptInput />
@@ -143,7 +149,7 @@ function App() {
             </PrivateRoute>
           } />
 
-          {/* 3. 기본 경로는 인증 상태에 따라 자동으로 리디렉션 */}
+          {/* 3. 기본 경로 리디렉션 */}
           <Route path="/" element={
             user ? 
               (user.profileComplete ? <Navigate to="/prompt" /> : <Navigate to="/profile-setup" />) : 
