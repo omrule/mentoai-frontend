@@ -9,12 +9,7 @@ import ScheduleCalendar from './pages/ScheduleCalendar';
 import MyPage from './pages/MyPage';
 import { useAuth } from './contexts/AuthContext';
 import './App.css';
-// [신규] OAuthCallback 페이지 임포트
 import OAuthCallback from './pages/OAuthCallback'; 
-
-// [오류 수정]
-// 누락되었던 PrivateRoute, PublicRoute, ProfileSetupRoute 함수 정의를
-// 여기에 다시 추가합니다.
 
 // 로그인한 사용자만 접근 가능한 페이지를 감싸는 컴포넌트
 function PrivateRoute({ children }) {
@@ -48,8 +43,8 @@ function PublicRoute({ children }) {
   }
 
   if (user && user.profileComplete) {
-    // 이미 로그인하고 프로필 설정도 완료했다면 메인 페이지로 리디렉션
-    return <Navigate to="/prompt" replace />;
+    // [수정] 이미 로그인한 사용자는 /prompt 대신 /recommend로 이동
+    return <Navigate to="/recommend" replace />;
   }
 
   if (user && !user.profileComplete) {
@@ -75,14 +70,13 @@ function ProfileSetupRoute({ children }) {
   }
 
   if (user && user.profileComplete) {
-    // 이미 프로필 설정을 완료했다면 메인 페이지로 리디렉션
-    return <Navigate to="/prompt" replace />;
+    // [수정] 이미 프로필 설정을 완료했다면 /prompt 대신 /recommend로 리디렉션
+    return <Navigate to="/recommend" replace />;
   }
   
   // 로그인했고 프로필 설정이 필요한 사용자
   return children;
 }
-// --- 여기까지 누락된 함수 정의 ---
 
 
 function App() {
@@ -152,7 +146,8 @@ function App() {
           {/* 3. 기본 경로 리디렉션 */}
           <Route path="/" element={
             user ? 
-              (user.profileComplete ? <Navigate to="/prompt" /> : <Navigate to="/profile-setup" />) : 
+              // [수정] 기본 경로도 /prompt 대신 /recommend로
+              (user.profileComplete ? <Navigate to="/recommend" /> : <Navigate to="/profile-setup" />) : 
               <Navigate to="/login" />
           } />
 

@@ -1,29 +1,23 @@
 import React, { useState } from 'react';
-import { saveUserProfile } from '../api/authApi'; // 프로필 저장 API
+// import { saveUserProfile } from '../api/authApi'; // API 호출 임시 주석 처리
 import './Page.css';
 
-// MyPage는 ProfileSetup과 거의 동일한 폼을 가지지만,
-// 'completeProfile' 대신 'saveUserProfile'만 호출하고
-// 기존 데이터를 불러와서 보여줍니다.
 function MyPage() {
   // --- 데모를 위해, 사용자의 프로필 정보 예시를 미리 채워둡니다. ---
   const [education, setEducation] = useState({ school: '멘토대학교', major: '컴퓨터공학과', grade: 3 });
   const [careerGoal, setCareerGoal] = useState('AI 엔지니어');
   
-  // SkillFit
   const [skills, setSkills] = useState([
     { name: 'React', level: '중' },
     { name: 'Spring Boot', level: '하' }
   ]);
   const [currentSkill, setCurrentSkill] = useState({ name: '', level: '중' });
   
-  // ExperienceFit
   const [experiences, setExperiences] = useState([
     { type: 'PROJECT', role: '프론트엔드 개발', period: '3개월', techStack: 'React', url: 'https://github.com/my-project' }
   ]);
   const [currentExperience, setCurrentExperience] = useState({ type: 'PROJECT', role: '', period: '', techStack: '', url: '' });
   
-  // EvidenceFit
   const [evidence, setEvidence] = useState({ certifications: ['정보처리기사'] });
   const [currentCert, setCurrentCert] = useState('');
 
@@ -71,7 +65,6 @@ function MyPage() {
   const handleSave = async () => {
     setIsSaving(true);
     
-    // [오류 수정] ES6 객체 축약 문법 대신 표준 문법 사용
     const profileData = {
       education: education,
       careerGoal: careerGoal,
@@ -81,10 +74,10 @@ function MyPage() {
     };
 
     try {
-      // 가짜 API 호출
-      await saveUserProfile(profileData);
+      // (임시) API 호출 주석 처리
+      // await saveUserProfile(profileData);
+      console.log("프로필 저장 (API 호출 건너뜀)", profileData);
       
-      // 저장 완료 토스트 메시지를 보여줍니다.
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
@@ -99,15 +92,17 @@ function MyPage() {
   };
 
   return (
-    <div className="page-container">
-      <h2>👤 마이페이지</h2>
-      <p>AI 추천 점수(RoleFitScore) 계산의 정확도를 높이기 위해 프로필 정보를 최신으로 유지해주세요.</p>
-
-      {/* ProfileSetup.js와 동일한 폼 구조를 사용합니다.
-        CSS는 Page.css의 .profile-card, .form-section 등을 공유합니다.
+    // [수정] page-container -> profile-setup-container로 변경
+    <div className="profile-setup-container">
+      {/* [수정] ProfileSetup.js와 동일한 구조로 변경
+        (profile-card가 profile-setup-container의 자식이 됨)
       */}
       <div className="profile-card mypage-card">
         
+        {/* [수정] h2와 p 태그를 카드 안으로 이동 */}
+        <h2>👤 마이페이지</h2>
+        <p>AI 추천 점수 계산의 정확도를 높이기 위해 프로필 정보를 최신으로 유지해주세요.</p>
+
         {/* --- 1. 기본 정보 섹션 (EducationFit, CareerGoal) --- */}
         <div className="form-section">
           <h3>기본 학력</h3>
@@ -156,7 +151,10 @@ function MyPage() {
         {/* --- 3. 주요 경험 섹션 (ExperienceFit) --- */}
         <div className="form-section">
           <h3>주요 경험</h3>
-          <div className="input-group experience-group" style={{gridTemplateColumns: "1fr 2fr 1fr 2fr 2fr auto"}}>
+          {/* 이제 이 div는 Page.css의 6열 그리드 스타일을
+            올바르게 상속받습니다. (인라인 style 없음)
+          */}
+          <div className="input-group experience-group">
             <select value={currentExperience.type} onChange={(e) => setCurrentExperience({ ...currentExperience, type: e.target.value })}>
               <option value="PROJECT">프로젝트</option>
               <option value="INTERN">인턴</option>
@@ -164,7 +162,6 @@ function MyPage() {
             <input type="text" placeholder="역할 (예: 프론트엔드 개발)" value={currentExperience.role} onChange={(e) => setCurrentExperience({ ...currentExperience, role: e.target.value })} />
             <input type="text" placeholder="기간 (예: 3개월)" value={currentExperience.period} onChange={(e) => setCurrentExperience({ ...currentExperience, period: e.target.value })} />
             <input type="text" placeholder="사용 기술 (예: React, Spring)" value={currentExperience.techStack} onChange={(e) => setCurrentExperience({ ...currentExperience, techStack: e.target.value })} />
-            {/* 'EvidenceFit'의 'portfolio' 항목을 위해 URL 입력란 추가 */}
             <input type="text" placeholder="관련 URL (GitHub, 포트폴리오)" value={currentExperience.url} onChange={(e) => setCurrentExperience({ ...currentExperience, url: e.target.value })} />
             <button type="button" className="add-item-btn" onClick={handleAddExperience}>추가</button>
           </div>
@@ -198,7 +195,6 @@ function MyPage() {
           </div>
         </div>
 
-        {/* MyPage에서는 submit이 아닌 onClick으로 변경, completeProfile 호출 제거 */}
         <button onClick={handleSave} className="submit-button" disabled={isSaving}>
           {isSaving ? '저장 중...' : '프로필 저장'}
         </button>

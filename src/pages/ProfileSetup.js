@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { saveUserProfile } from '../api/authApi'; // 프로필 저장 API
+// [수정] saveUserProfile 임포트 주석 처리 (임시)
+// import { saveUserProfile } from '../api/authApi'; 
 import './Page.css';
 
 function ProfileSetup() {
@@ -13,14 +14,14 @@ function ProfileSetup() {
   
   // ExperienceFit
   const [experiences, setExperiences] = useState([]);
-  const [currentExperience, setCurrentExperience] = useState({ type: 'PROJECT', role: '', period: '', techStack: '' });
+  const [currentExperience, setCurrentExperience] = useState({ type: 'PROJECT', role: '', period: '', techStack: '', url: '' });
   
-  // EvidenceFit (GitHub, Blog 제거)
+  // EvidenceFit
   const [evidence, setEvidence] = useState({ certifications: [] });
   const [currentCert, setCurrentCert] = useState('');
 
   const [isSaving, setIsSaving] = useState(false);
-  const { completeProfile } = useAuth();
+  const { completeProfile } = useAuth(); // AuthContext의 completeProfile 사용
 
   // --- SkillFit 핸들러 ---
   const handleAddSkill = () => {
@@ -37,7 +38,7 @@ function ProfileSetup() {
   const handleAddExperience = () => {
     if (currentExperience.role && currentExperience.period) {
       setExperiences([...experiences, currentExperience]);
-      setCurrentExperience({ type: 'PROJECT', role: '', period: '', techStack: '' });
+      setCurrentExperience({ type: 'PROJECT', role: '', period: '', techStack: '', url: '' });
     }
   };
   const handleRemoveExperience = (index) => {
@@ -68,14 +69,17 @@ function ProfileSetup() {
       careerGoal,
       skillFit: skills,
       experienceFit: experiences,
-      evidenceFit: evidence // github, blog가 빠진 상태로 전송됨
+      evidenceFit: evidence
     };
 
     try {
-      // 가짜 API 호출
-      await saveUserProfile(profileData);
-      // AuthContext 상태 업데이트 (로그인 완료 처리)
-      completeProfile(profileData);
+      // [수정] 실제 API 호출을 주석 처리 (CORS 임시 우회)
+      // await saveUserProfile(profileData);
+      
+      // [수정] AuthContext의 completeProfile만 호출
+      // (이 함수는 AuthContext.js에서 API 호출 없이 상태만 업데이트하도록 수정되었음)
+      completeProfile(profileData); 
+
     } catch (error) {
       console.error("프로필 저장 실패:", error);
       alert("프로필 저장 중 오류가 발생했습니다.");
@@ -91,7 +95,7 @@ function ProfileSetup() {
         <h2>상세 프로필 설정</h2>
         <p>AI 추천 점수(RoleFitScore) 계산의 정확도를 높이기 위해 정보를 입력해주세요. (나중에 마이페이지에서 수정할 수 있습니다)</p>
 
-        {/* --- 1. 기본 정보 섹션 --- */}
+        {/* --- 1. 기본 정보 섹션 (EducationFit, CareerGoal) --- */}
         <div className="form-section">
           <h3>기본 학력</h3>
           <div className="form-grid two-cols">
@@ -114,7 +118,7 @@ function ProfileSetup() {
           </div>
         </div>
 
-        {/* --- 2. 기술 스택 섹션 --- */}
+        {/* --- 2. 기술 스택 섹션 (SkillFit) --- */}
         <div className="form-section">
           <h3>기술 스택</h3>
           <div className="input-group">
@@ -136,9 +140,10 @@ function ProfileSetup() {
           </ul>
         </div>
 
-        {/* --- 3. 주요 경험 섹션 --- */}
+        {/* --- 3. 주요 경험 섹션 (ExperienceFit) --- */}
         <div className="form-section">
           <h3>주요 경험</h3>
+          {/* [수정] 레이아웃 오류를 수정하기 위해 인라인 style 속성 제거 */}
           <div className="input-group experience-group">
             <select value={currentExperience.type} onChange={(e) => setCurrentExperience({ ...currentExperience, type: e.target.value })}>
               <option value="PROJECT">프로젝트</option>
@@ -147,19 +152,20 @@ function ProfileSetup() {
             <input type="text" placeholder="역할 (예: 프론트엔드 개발)" value={currentExperience.role} onChange={(e) => setCurrentExperience({ ...currentExperience, role: e.target.value })} />
             <input type="text" placeholder="기간 (예: 3개월)" value={currentExperience.period} onChange={(e) => setCurrentExperience({ ...currentExperience, period: e.target.value })} />
             <input type="text" placeholder="사용 기술 (예: React, Spring)" value={currentExperience.techStack} onChange={(e) => setCurrentExperience({ ...currentExperience, techStack: e.target.value })} />
+            <input type="text" placeholder="관련 URL (GitHub, 포트폴리오)" value={currentExperience.url} onChange={(e) => setCurrentExperience({ ...currentExperience, url: e.target.value })} />
             <button type="button" className="add-item-btn" onClick={handleAddExperience}>추가</button>
           </div>
           <ul className="added-list">
             {experiences.map((exp, index) => (
               <li key={index} className="added-item">
-                [{exp.type}] {exp.role} ({exp.period}) - {exp.techStack}
+                [{exp.type}] {exp.role} ({exp.period}) - {exp.techStack} {exp.url && `(${exp.url})`}
                 <button type="button" className="remove-item-btn" onClick={() => handleRemoveExperience(index)}>×</button>
               </li>
             ))}
           </ul>
         </div>
 
-        {/* --- 4. 증빙 자료 섹션 (GitHub, Blog 제거) --- */}
+        {/* --- 4. 증빙 자료 섹션 (EvidenceFit) --- */}
         <div className="form-section">
           <h3>증빙 자료</h3>
           <div className="form-group">

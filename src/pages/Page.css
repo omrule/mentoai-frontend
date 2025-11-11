@@ -38,10 +38,10 @@
   text-align: center;
   box-sizing: border-box;
 }
-/* ProfileSetup.js 카드 (더 넓게, 왼쪽 쏠림 문제 해결) */
+/* [수정] ProfileSetup.js 카드 (더 넓게) */
 .profile-card {
   width: 100%;
-  max-width: 900px; /* 최대 너비 확장 */
+  max-width: 1200px; /* 1100px -> 1200px로 너비 확장 */
   padding: 40px 50px; /* 패딩 조정 */
   background-color: white;
   border-radius: 16px;
@@ -138,6 +138,18 @@
   box-sizing: border-box;
 }
 
+/* '기술 스택', '주요 경험'의 input/select에도
+ .form-group의 input과 동일한 스타일(곡률, 패딩, 테두리 등)을 적용합니다.
+*/
+.input-group input, .input-group select {
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  padding: 12px;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+
 /* 동적 입력 UI (Skill, Experience 등) */
 .input-group {
   display: flex;
@@ -147,12 +159,15 @@
 /* ExperienceFit의 폼 그룹 */
 .input-group.experience-group {
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr 2fr auto;
+  /* [수정] 6열 비율 재조정 (버튼이 들어올 공간 확보) */
+  grid-template-columns: 1fr 1.5fr 1fr 1.5fr 2fr auto;
   gap: 10px;
 }
+/* 모바일 반응형 수정 (UI 다듬기) */
 @media (max-width: 768px) {
   .input-group.experience-group {
-    grid-template-columns: 1fr; /* 모바일에서는 1줄로 */
+    display: flex;
+    flex-direction: column; 
   }
 }
 .input-group input { flex-grow: 1; } /* 입력창이 남는 공간 차지 */
@@ -248,8 +263,8 @@
 .pin-button { position: absolute; top: 20px; right: 20px; background: transparent; border: 1px solid #007bff; color: #007bff; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: 500; }
 .pin-button:hover { background-color: #e7f3ff; }
 
-/* 토스트 팝업 */
-.toast-popup {
+/* 토스트 팝업 (toast-popup -> toast-message로 통일) */
+.toast-message {
   position: fixed;
   bottom: 30px;
   left: 50%;
