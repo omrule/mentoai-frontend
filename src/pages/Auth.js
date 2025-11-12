@@ -1,17 +1,14 @@
 import React from 'react';
-// [수정] 모든 훅(useState, useAuth) 제거
 import './Page.css';
 
-// [신규] 백엔드 서버 주소
+// 백엔드 서버 주소
 const API_BASE_URL = 'https://mentoai.onrender.com';
 
-// [신규] 백엔드의 Google OAuth2 시작 주소
+// 백엔드의 Google OAuth2 시작 주소
 const GOOGLE_LOGIN_START_URL = `${API_BASE_URL}/auth/google/start`;
 
 
 function AuthPage() {
-  // [수정] 임시 로그인/실제 로그인 로직 모두 제거
-
   return (
     <div className="auth-container">
       <div className="auth-card">
@@ -22,10 +19,7 @@ function AuthPage() {
         </p>
 
         {/* [수정] 
-          <a> 태그가 직접 'google-login-button' 클래스를 갖도록 수정.
-          이 <a> 태그는 React 앱 내에서 페이지를 이동하는 것이 아니라,
-          브라우저가 'https://mentoai.onrender.com/auth/google/start'
-          백엔드 주소로 완전히 이동하도록 만듭니다.
+          <a> 태그가 <button> 태그 대신 이 클래스를 직접 사용합니다.
         */}
         <a 
           href={GOOGLE_LOGIN_START_URL} 
