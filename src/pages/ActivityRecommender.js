@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './Page.css';
 
-// [수정] 목표 점수(80~90점대)를 title에 추가
+// [수정] 70점대 유저에게 80~90점대 목표를 제안하는 가상 추천 데이터
 const mockRecommendations = [
   {
     id: 'naver_ai',
@@ -72,26 +72,27 @@ function ActivityRecommender() {
 
   return (
     <div className="page-container">
-      <h2>✨ AI 맞춤 활동 추천</h2>
-      <p>AI 전문가로 성장하기 위한 핵심 활동들을 확인하고, 나만의 커리어 로드맵을 만들어보세요.</p>
+      {/* <h2> 태그 삭제됨 */}
+      {/* <p> 태그 삭제됨 */}
       
-      {/* [신규] 사용자 현재 점수 표시 카드 */}
+      {/* 사용자 현재 점수 표시 카드 */}
       <div style={{
         padding: '20px',
-        backgroundColor: '#f8f9fa', // 페이지 배경보다 약간 어둡게
-        border: '1px solid #dee2e6', // 연한 테두리
+        backgroundColor: '#f8f9fa',
+        border: '1px solid #dee2e6',
         borderRadius: '8px',
-        marginBottom: '40px', // 아래 레이아웃과의 간격
+        marginBottom: '40px',
         textAlign: 'center'
       }}>
+        {/* [수정] 멘트 수정 */}
         <h3 style={{ margin: '0', color: '#343a40', fontSize: '1.25rem' }}>
           현재 점수는 <span style={{ color: '#007bff', fontSize: '1.5em', fontWeight: 'bold' }}>70점</span> 입니다.
         </h3>
+        {/* [수정] 멘트 수정 */}
         <p style={{ margin: '10px 0 0', color: '#495057', fontSize: '1rem' }}>
-          아래 '추천 항목'을 달성하여 80~90점대 목표를 완성해보세요!
+          아래 '추천 항목'을 확인하고 목표 달성을 시작해 보세요!
         </p>
       </div>
-      {/* [신규] 카드 끝 */}
 
       <div className="recommender-layout">
         <div className="task-list-card">
@@ -103,7 +104,6 @@ function ActivityRecommender() {
                 className={activeTab === activity.id ? 'active' : ''}
                 onClick={() => setActiveTab(activity.id)}
               >
-                {/* 점수가 포함된 title이 여기에 표시됩니다 */}
                 {activity.title}
               </li>
             ))}
@@ -112,7 +112,6 @@ function ActivityRecommender() {
 
         {selectedActivity && (
           <div className="activity-detail-card">
-            {/* 점수가 포함된 title이 여기에도 표시됩니다 */}
             <h3>{selectedActivity.title} 활동 추천 목록</h3>
             
             <div className="activity-section" dangerouslySetInnerHTML={{ __html: selectedActivity.content }} />

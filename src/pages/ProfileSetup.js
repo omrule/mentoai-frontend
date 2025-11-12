@@ -2,6 +2,19 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 // import { saveUserProfile } from '../api/authApi'; // API 호출 임시 주석 처리
 import './Page.css';
+import CustomSelect from '../components/CustomSelect';
+
+const skillOptions = [
+  { value: '상', label: '상 (업무 활용)' },
+  { value: '중', label: '중 (토이 프로젝트)' },
+  { value: '하', label: '하 (학습 경험)' }
+];
+
+const experienceOptions = [
+  { value: 'PROJECT', label: '프로젝트' },
+  { value: 'INTERN', label: '인턴' }
+];
+
 
 function ProfileSetup() {
   const [education, setEducation] = useState({ school: '멘토대학교', major: '컴퓨터공학과', grade: 3 });
@@ -72,7 +85,6 @@ function ProfileSetup() {
       // (임시) API 호출 주석 처리
       // await saveUserProfile(profileData);
       
-      // AuthContext의 completeProfile만 호출
       completeProfile(profileData); 
 
     } catch (error) {
@@ -86,10 +98,8 @@ function ProfileSetup() {
   return (
     <div className="profile-setup-container">
       <form className="profile-card" onSubmit={handleSubmit}>
-        {/* [수정] 멘토아이 -> MentoAI */}
-        <h1 className="auth-logo">MentoAI</h1>
-        <h2>상세 프로필 설정</h2>
-        <p>AI 추천 점수(RoleFitScore) 계산의 정확도를 높이기 위해 정보를 입력해주세요. (나중에 마이페이지에서 수정할 수 있습니다)</p>
+        <h2 className="profile-card-title">📝 상세 프로필 설정</h2>
+        <p className="profile-card-description">AI 추천 정확도를 높이기 위해 정보를 입력해주세요. (나중에 마이페이지에서 수정할 수 있습니다)</p>
 
         {/* --- 1. 기본 정보 섹션 (EducationFit, CareerGoal) --- */}
         <div className="form-section">
@@ -117,13 +127,14 @@ function ProfileSetup() {
         {/* --- 2. 기술 스택 섹션 (SkillFit) --- */}
         <div className="form-section">
           <h3>기술 스택</h3>
-          <div className="input-group">
+          {/* [수정] 너비 제어를 위해 'skill-group' 클래스 추가 */}
+          <div className="input-group skill-group">
             <input type="text" placeholder="기술 이름 (예: React)" value={currentSkill.name} onChange={(e) => setCurrentSkill({ ...currentSkill, name: e.target.value })} />
-            <select value={currentSkill.level} onChange={(e) => setCurrentSkill({ ...currentSkill, level: e.target.value })}>
-              <option value="상">상 (업무 활용)</option>
-              <option value="중">중 (토이 프로젝트)</option>
-              <option value="하">하 (학습 경험)</option>
-            </select>
+            <CustomSelect
+              options={skillOptions}
+              value={currentSkill.level}
+              onChange={(newValue) => setCurrentSkill({ ...currentSkill, level: newValue })}
+            />
             <button type="button" className="add-item-btn" onClick={handleAddSkill}>추가</button>
           </div>
           <ul className="added-list">
@@ -140,10 +151,11 @@ function ProfileSetup() {
         <div className="form-section">
           <h3>주요 경험</h3>
           <div className="input-group experience-group">
-            <select value={currentExperience.type} onChange={(e) => setCurrentExperience({ ...currentExperience, type: e.target.value })}>
-              <option value="PROJECT">프로젝트</option>
-              <option value="INTERN">인턴</option>
-            </select>
+            <CustomSelect
+              options={experienceOptions}
+              value={currentExperience.type}
+              onChange={(newValue) => setCurrentExperience({ ...currentExperience, type: newValue })}
+            />
             <input type="text" placeholder="역할 (예: 프론트엔드 개발)" value={currentExperience.role} onChange={(e) => setCurrentExperience({ ...currentExperience, role: e.target.value })} />
             <input type="text" placeholder="기간 (예: 3개월)" value={currentExperience.period} onChange={(e) => setCurrentExperience({ ...currentExperience, period: e.target.value })} />
             <input type="text" placeholder="사용 기술 (예: React, Spring)" value={currentExperience.techStack} onChange={(e) => setCurrentExperience({ ...currentExperience, techStack: e.target.value })} />

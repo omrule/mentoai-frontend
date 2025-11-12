@@ -45,7 +45,6 @@ function PromptInput() {
   useEffect(scrollToBottom, [messages]);
 
   const handleRecommend = () => {
-    // [수정] 로딩 중이거나 프롬프트가 비어있으면 전송 안 함
     if (isLoading || !prompt.trim()) return;
 
     const guardrailResult = checkGuardrails(prompt);
@@ -58,7 +57,6 @@ function PromptInput() {
     setPrompt(''); 
     setIsLoading(true);
 
-    // ... (API 호출 시뮬레이션) ...
     console.log("RAG 프롬프트 생성 (시뮬레이션)");
 
     setTimeout(() => {
@@ -142,36 +140,38 @@ function PromptInput() {
           </div>
           
           {/* 2-2. 메시지 입력 영역 */}
+          {/* [수정] 입력창 UI 구조 변경 */}
           <div className="chat-input-area">
-            <textarea
-              className="prompt-input-area"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="AI 멘토에게 질문을 입력하세요..."
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleRecommend();
-                }
-              }}
-            />
-            {/* [수정] 텍스트 버튼 -> SVG 아이콘 버튼으로 변경 */}
-            <button 
-              className="prompt-button" 
-              onClick={handleRecommend} 
-              disabled={isLoading || !prompt.trim()}
-            >
-              {/* 종이비행기 아이콘 (ChatGPT 스타일) */}
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                viewBox="0 0 24 24" 
-                width="24" 
-                height="24" 
-                className="send-icon"
+            <div className="chat-input-wrapper">
+              <textarea
+                className="chat-textarea" 
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="AI 멘토에게 질문을 입력하세요..."
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleRecommend();
+                  }
+                }}
+                rows={1} // [신규] 기본 1줄로 시작
+              />
+              <button 
+                className="chat-send-button" 
+                onClick={handleRecommend} 
+                disabled={isLoading || !prompt.trim()}
               >
-                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2 .01 7z"></path>
-              </svg>
-            </button>
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  viewBox="0 0 24 24" 
+                  width="24" 
+                  height="24" 
+                  className="send-icon"
+                >
+                  <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2 .01 7z"></path>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>

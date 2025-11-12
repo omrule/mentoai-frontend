@@ -1,10 +1,21 @@
 import React, { useState } from 'react';
 // import { saveUserProfile } from '../api/authApi'; // API 호출 임시 주석 처리
 import './Page.css';
+import CustomSelect from '../components/CustomSelect';
+
+const skillOptions = [
+  { value: '상', label: '상 (업무 활용)' },
+  { value: '중', label: '중 (토이 프로젝트)' },
+  { value: '하', label: '하 (학습 경험)' }
+];
+
+const experienceOptions = [
+  { value: 'PROJECT', label: '프로젝트' },
+  { value: 'INTERN', label: '인턴' }
+];
 
 function MyPage() {
-  // --- 데모를 위해, 사용자의 프로필 정보 예시를 미리 채워둡니다. ---
-  const [education, setEducation] = useState({ school: '경희대학교', major: '컴퓨터공학과', grade: 3 });
+  const [education, setEducation] = useState({ school: '멘토대학교', major: '컴퓨터공학과', grade: 3 });
   const [careerGoal, setCareerGoal] = useState('AI 엔지니어');
   
   const [skills, setSkills] = useState([
@@ -23,7 +34,6 @@ function MyPage() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [showToast, setShowToast] = useState(false);
-  // -----------------------------------------------------------------
 
   // --- SkillFit 핸들러 ---
   const handleAddSkill = () => {
@@ -92,17 +102,12 @@ function MyPage() {
   };
 
   return (
-    // [수정] page-container -> profile-setup-container로 변경
-    <div className="profile-setup-container">
-      {/* [수정] ProfileSetup.js와 동일한 구조로 변경
-        (profile-card가 profile-setup-container의 자식이 됨)
-      */}
-      <div className="profile-card mypage-card">
+    <div className="profile-card-container"> 
+      <div className="profile-card mypage-card"> 
+        <p className="profile-card-description">
+          AI 추천 정확도를 높이기 위해 프로필 정보를 최신으로 유지해주세요.
+        </p>
         
-        {/* [수정] h2와 p 태그를 카드 안으로 이동 */}
-        <h2>👤 마이페이지</h2>
-        <p>AI 추천 점수 계산의 정확도를 높이기 위해 프로필 정보를 최신으로 유지해주세요.</p>
-
         {/* --- 1. 기본 정보 섹션 (EducationFit, CareerGoal) --- */}
         <div className="form-section">
           <h3>기본 학력</h3>
@@ -129,13 +134,14 @@ function MyPage() {
         {/* --- 2. 기술 스택 섹션 (SkillFit) --- */}
         <div className="form-section">
           <h3>기술 스택</h3>
-          <div className="input-group">
+          {/* [수정] 너비 제어를 위해 'skill-group' 클래스 추가 */}
+          <div className="input-group skill-group">
             <input type="text" placeholder="기술 이름 (예: React)" value={currentSkill.name} onChange={(e) => setCurrentSkill({ ...currentSkill, name: e.target.value })} />
-            <select value={currentSkill.level} onChange={(e) => setCurrentSkill({ ...currentSkill, level: e.target.value })}>
-              <option value="상">상 (업무 활용)</option>
-              <option value="중">중 (토이 프로젝트)</option>
-              <option value="하">하 (학습 경험)</option>
-            </select>
+            <CustomSelect
+              options={skillOptions}
+              value={currentSkill.level}
+              onChange={(newValue) => setCurrentSkill({ ...currentSkill, level: newValue })}
+            />
             <button type="button" className="add-item-btn" onClick={handleAddSkill}>추가</button>
           </div>
           <ul className="added-list">
@@ -151,14 +157,12 @@ function MyPage() {
         {/* --- 3. 주요 경험 섹션 (ExperienceFit) --- */}
         <div className="form-section">
           <h3>주요 경험</h3>
-          {/* 이제 이 div는 Page.css의 6열 그리드 스타일을
-            올바르게 상속받습니다. (인라인 style 없음)
-          */}
           <div className="input-group experience-group">
-            <select value={currentExperience.type} onChange={(e) => setCurrentExperience({ ...currentExperience, type: e.target.value })}>
-              <option value="PROJECT">프로젝트</option>
-              <option value="INTERN">인턴</option>
-            </select>
+            <CustomSelect
+              options={experienceOptions}
+              value={currentExperience.type}
+              onChange={(newValue) => setCurrentExperience({ ...currentExperience, type: newValue })}
+            />
             <input type="text" placeholder="역할 (예: 프론트엔드 개발)" value={currentExperience.role} onChange={(e) => setCurrentExperience({ ...currentExperience, role: e.target.value })} />
             <input type="text" placeholder="기간 (예: 3개월)" value={currentExperience.period} onChange={(e) => setCurrentExperience({ ...currentExperience, period: e.target.value })} />
             <input type="text" placeholder="사용 기술 (예: React, Spring)" value={currentExperience.techStack} onChange={(e) => setCurrentExperience({ ...currentExperience, techStack: e.target.value })} />

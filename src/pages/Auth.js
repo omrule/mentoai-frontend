@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-// [수정] useNavigate 제거
 // import { useNavigate } from 'react-router-dom'; 
 import { useAuth } from '../contexts/AuthContext';
 // import { useGoogleLogin } from '@react-oauth/google'; // (주석)
@@ -38,14 +37,12 @@ function AuthPage() {
     auth.login(fakeUser);
 
     // 3. [삭제] navigate('/profile-setup');
-    // 이 라인을 삭제합니다.
-    // App.js의 PublicRoute가 user 상태 변경을 감지하고
-    // 자동으로 /profile-setup으로 리디렉션할 것입니다.
   };
 
   return (
     <div className="auth-container">
       <div className="auth-card">
+        {/* [복원] MentoAI 로고 복원 */}
         <h1 className="auth-logo">MentoAI</h1>
         <p className="auth-subtitle">
           AI와 함께 당신의 진로를 설계하고<br />
