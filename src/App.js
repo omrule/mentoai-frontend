@@ -20,17 +20,13 @@ function PrivateRoute({ children }) {
   }
 
   if (!user) {
-    // 로그인하지 않은 사용자는 로그인 페이지로 리디렉션
     return <Navigate to="/login" replace />;
   }
 
   if (user && !user.profileComplete) {
-    // 로그인은 했지만 프로필 설정이 완료되지 않은 경우
-    // 현재 경로가 /profile-setup이 아니라면 리디렉션
     return <Navigate to="/profile-setup" replace />;
   }
   
-  // 로그인했고 프로필 설정도 완료한 사용자
   return children;
 }
 
@@ -43,16 +39,13 @@ function PublicRoute({ children }) {
   }
 
   if (user && user.profileComplete) {
-    // [수정] 이미 로그인한 사용자는 /prompt 대신 /recommend로 이동
     return <Navigate to="/recommend" replace />;
   }
 
   if (user && !user.profileComplete) {
-      // 로그인은 했지만 프로필 설정이 완료되지 않은 경우
     return <Navigate to="/profile-setup" replace />;
   }
 
-  // 로그인하지 않은 사용자
   return children;
 }
 
@@ -65,23 +58,20 @@ function ProfileSetupRoute({ children }) {
   }
 
   if (!user) {
-    // 로그인하지 않은 사용자는 로그인 페이지로 리디렉션
     return <Navigate to="/login" replace />;
   }
 
   if (user && user.profileComplete) {
-    // [수정] 이미 프로필 설정을 완료했다면 /prompt 대신 /recommend로 리디렉션
     return <Navigate to="/recommend" replace />;
   }
   
-  // 로그인했고 프로필 설정이 필요한 사용자
   return children;
 }
 
 
 function App() {
   const { user, loading } = useAuth();
-  const location = useLocation();
+  const location = useLocation(); // 현재 경로를 알기 위해 useLocation 사용
 
   if (loading) {
     return (
@@ -91,7 +81,6 @@ function App() {
     );
   }
 
-  // [수정] 콜백 경로에서도 Navbar 숨김
   const showNavbar = user && user.profileComplete && 
                      location.pathname !== '/login' && 
                      location.pathname !== '/profile-setup' && 
@@ -99,11 +88,25 @@ function App() {
   
   const appClassName = showNavbar ? "App" : "App-unauthed";
 
+  // [신규] main 태그의 클래스를 동적으로 결정하는 함수
+  const getContentClass = () => {
+    if (!showNavbar) {
+      return "content-full"; // 로그인/프로필 페이지 (패딩 0)
+    }
+    // [신규] /prompt (채팅) 페이지일 경우 패딩이 없는 chat 클래스 적용
+    if (location.pathname === '/prompt') {
+      return "content-chat"; 
+    }
+    // 나머지 모든 페이지는 기본 content 클래스 적용 (패딩 30px)
+    return "content";
+  };
+
   return (
     <div className={appClassName}>
       {showNavbar && <Navbar />}
       
-      <main className={showNavbar ? "content" : "content-full"}>
+      {/* [수정] className을 동적으로 할당 */}
+      <main className={getContentClass()}>
         <Routes>
           {/* 1. 로그인/프로필 설정/콜백 경로 */}
           <Route path="/login" element={
@@ -116,8 +119,6 @@ function App() {
               <ProfileSetup />
             </ProfileSetupRoute>
           } />
-
-          {/* [신규] 백엔드가 리디렉션할 콜백 경로. */}
           <Route path="/oauth/callback" element={<OAuthCallback />} />
 
 
@@ -146,7 +147,6 @@ function App() {
           {/* 3. 기본 경로 리디렉션 */}
           <Route path="/" element={
             user ? 
-              // [수정] 기본 경로도 /prompt 대신 /recommend로
               (user.profileComplete ? <Navigate to="/recommend" /> : <Navigate to="/profile-setup" />) : 
               <Navigate to="/login" />
           } />

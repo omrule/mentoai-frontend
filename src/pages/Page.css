@@ -1,6 +1,6 @@
 /* src/pages/Page.css */
 .page-container {
-  max-width: 1100px; /* 캘린더를 위해 페이지 너비 확장 */
+  max-width: 1100px;
   margin: 0 auto;
   padding: 0 20px;
 }
@@ -23,10 +23,10 @@
   justify-content: center;
   align-items: center;
   width: 100%;
-  min-height: 100vh; /* 최소 높이 보장 */
-  padding: 40px 20px; /* 상하좌우 패딩 */
+  min-height: 100vh;
+  padding: 40px 20px;
   box-sizing: border-box;
-  background-color: #f8f9fa; /* App.css의 unauthed와 동일한 배경 */
+  background-color: #f8f9fa;
 }
 .auth-card {
   width: 100%;
@@ -38,15 +38,14 @@
   text-align: center;
   box-sizing: border-box;
 }
-/* [수정] ProfileSetup.js 카드 (더 넓게) */
 .profile-card {
   width: 100%;
-  max-width: 1200px; /* 1100px -> 1200px로 너비 확장 */
-  padding: 40px 50px; /* 패딩 조정 */
+  max-width: 1200px;
+  padding: 40px 50px;
   background-color: white;
   border-radius: 16px;
   box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-  text-align: left; /* 기본 정렬을 왼쪽으로 */
+  text-align: left;
   box-sizing: border-box;
 }
 
@@ -55,14 +54,14 @@
   font-weight: 800;
   color: #007bff;
   margin: 0 0 15px 0;
-  text-align: center; /* 로고만 중앙 정렬 */
+  text-align: center;
 }
 .auth-subtitle { 
   font-size: 17px; 
   color: #555; 
   margin-bottom: 40px; 
   line-height: 1.6;
-  text-align: center; /* 부제목도 중앙 정렬 */
+  text-align: center;
 }
 .google-login-button {
   width: 100%; padding: 14px; font-size: 16px; font-weight: 600;
@@ -88,7 +87,7 @@
   font-size: 15px; 
   margin-bottom: 30px; 
   color: #666;
-  text-align: center; /* 설명 텍스트도 중앙 정렬 */
+  text-align: center;
 }
 .form-section {
   margin-bottom: 30px;
@@ -100,7 +99,7 @@
   padding-bottom: 10px;
 }
 .form-section h3 {
-  font-size: 18px; /* 제목 크기 살짝 줄임 */
+  font-size: 18px;
   color: #333;
   margin-bottom: 20px;
 }
@@ -114,12 +113,12 @@
 }
 @media (max-width: 640px) {
   .form-grid.two-cols {
-    grid-template-columns: 1fr; /* 모바일에서는 1줄로 */
+    grid-template-columns: 1fr;
   }
 }
 
 .form-group {
-  margin-bottom: 15px; /* 폼 그룹간 간격 살짝 줄임 */
+  margin-bottom: 15px;
   text-align: left;
 }
 .form-group label {
@@ -138,9 +137,6 @@
   box-sizing: border-box;
 }
 
-/* '기술 스택', '주요 경험'의 input/select에도
- .form-group의 input과 동일한 스타일(곡률, 패딩, 테두리 등)을 적용합니다.
-*/
 .input-group input, .input-group select {
   border-radius: 8px;
   border: 1px solid #ccc;
@@ -156,21 +152,18 @@
   gap: 10px;
   margin-bottom: 15px;
 }
-/* ExperienceFit의 폼 그룹 */
 .input-group.experience-group {
   display: grid;
-  /* [수정] 6열 비율 재조정 (버튼이 들어올 공간 확보) */
   grid-template-columns: 1fr 1.5fr 1fr 1.5fr 2fr auto;
   gap: 10px;
 }
-/* 모바일 반응형 수정 (UI 다듬기) */
 @media (max-width: 768px) {
   .input-group.experience-group {
     display: flex;
     flex-direction: column; 
   }
 }
-.input-group input { flex-grow: 1; } /* 입력창이 남는 공간 차지 */
+.input-group input { flex-grow: 1; }
 .input-group select { min-width: 100px; }
 .add-item-btn {
   padding: 0 20px;
@@ -182,9 +175,9 @@
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.2s;
-  white-space: nowrap; /* '추가' 버튼 줄바꿈 방지 */
-  height: 47px; /* input과 높이 맞춤 */
-  align-self: end; /* 그리드 하단 정렬 */
+  white-space: nowrap;
+  height: 47px;
+  align-self: end;
 }
 .add-item-btn:hover { background-color: #0056b3; }
 
@@ -216,7 +209,7 @@
   font-size: 14px;
   font-weight: bold;
   cursor: pointer;
-  line-height: 20px; /* 텍스트 중앙 정렬 */
+  line-height: 20px;
   text-align: center;
   padding: 0;
 }
@@ -240,7 +233,7 @@
 .submit-button:disabled { background-color: #6c757d; }
 .mypage-card { max-width: 100%; }
 
-/* --- PromptInput --- */
+/* --- PromptInput (기존) --- */
 .prompt-card { background-color: #f8f9fa; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 .prompt-input-area { width: 100%; min-height: 120px; padding: 15px; border: 1px solid #dee2e6; border-radius: 8px; font-size: 16px; resize: vertical; box-sizing: border-box; margin-bottom: 15px; }
 .prompt-button { padding: 12px 25px; font-size: 16px; font-weight: bold; color: white; background-color: #007bff; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.2s; }
@@ -263,7 +256,7 @@
 .pin-button { position: absolute; top: 20px; right: 20px; background: transparent; border: 1px solid #007bff; color: #007bff; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: 500; }
 .pin-button:hover { background-color: #e7f3ff; }
 
-/* 토스트 팝업 (toast-popup -> toast-message로 통일) */
+/* 토스트 팝업 */
 .toast-message {
   position: fixed;
   bottom: 30px;
@@ -284,7 +277,7 @@
   100% { opacity: 0; bottom: 0; }
 }
 
-/* --- PortfolioCalendar --- */
+/* --- PortfolioCalendar (삭제된 페이지) --- */
 .semester-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -305,40 +298,7 @@
 .save-button:hover { background-color: #0056b3; }
 
 /* --- GraduationCalculator --- */
-.calculator-layout {
-  display: grid;
-  grid-template-columns: 1fr 1.2fr; /* 오른쪽 영역을 조금 더 넓게 */
-  gap: 30px;
-}
-@media (max-width: 768px) {
-  .calculator-layout { grid-template-columns: 1fr; }
-}
-.calculator-card { background-color: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-.card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
-.card-header h3 { margin: 0; }
-.card-header span { font-size: 15px; color: #666; }
-.gpa-info { display: flex; justify-content: space-around; margin-bottom: 25px; }
-.gpa-info div { font-size: 16px; color: #555; text-align: center; }
-.gpa-info strong { display: block; font-size: 22px; color: #007bff; margin-top: 5px; }
-.credit-details { display: grid; gap: 15px; }
-.credit-item { display: flex; align-items: center; gap: 15px; }
-.credit-item span:first-child { width: 80px; font-weight: 500; }
-.progress-bar { flex-grow: 1; height: 10px; background-color: #e9ecef; border-radius: 5px; overflow: hidden; }
-.progress-bar div { height: 100%; background-color: #007bff; border-radius: 5px; transition: width 0.3s ease; }
-.course-list-card { background-color: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-.course-list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.course-list-header h3 { margin: 0; }
-.add-grade-btn { padding: 8px 15px; font-size: 14px; font-weight: bold; color: white; background-color: #007bff; border: none; border-radius: 8px; cursor: pointer; }
-.add-grade-btn:hover { background-color: #0056b3; }
-.course-table { width: 100%; border-collapse: collapse; }
-.course-table th, .course-table td { text-align: left; padding: 12px 8px; border-bottom: 1px solid #f1f3f5; }
-.course-table th { font-size: 14px; color: #888; }
-.course-table td { font-size: 15px; color: #333; }
-.course-table th:nth-child(2), .course-table td:nth-child(2),
-.course-table th:nth-child(3), .course-table td:nth-child(3) { 
-  text-align: center;
-  width: 15%; /* 학점, 성적 컬럼 너비 고정 */
-}
+/* ( ... 생략 ... ) */
 
 /* --- ActivityRecommender --- */
 .recommender-layout { display: flex; gap: 30px; align-items: flex-start; }
@@ -519,3 +479,184 @@
   color: white;
 }
 .modal-actions .btn-save:hover { background-color: #0056b3; }
+
+
+/* [신규] 
+   --- 진로설계 AI (채팅 UI) 전용 CSS --- 
+*/
+
+.chat-page-container {
+  /* [수정] App.js에서 .content-chat이 패딩을 0으로 
+     만들어주므로, -30px 마진 핵(hack)이 더 이상 필요 없음 */
+}
+.chat-layout {
+  display: flex;
+  height: calc(100vh - 60px); /* 100vh - 상단바 높이 */
+}
+
+/* * 2. 왼쪽: 채팅 히스토리 사이드바
+*/
+.chat-history-sidebar {
+  width: 260px;
+  background-color: #f8f9fa;
+  border-right: 1px solid #dee2e6;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+.new-chat-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #007bff;
+  background-color: #fff;
+  border: 1px solid #007bff;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: all 0.2s;
+}
+.new-chat-btn:hover {
+  background-color: #f8f9fa;
+}
+.chat-history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  flex-grow: 1; /* 남은 공간 모두 차지 */
+}
+.chat-history-list li {
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chat-history-list li:hover {
+  background-color: #e9ecef;
+}
+.chat-history-list li.active {
+  background-color: #e7f3ff;
+  color: #007bff;
+  font-weight: 600;
+}
+
+
+/* * 3. 오른쪽: 메인 채팅창
+*/
+.chat-window {
+  flex: 1; /* 남은 너비 모두 차지 */
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+}
+
+/* 3-1. 메시지 출력 영역 */
+.chat-messages-area {
+  flex-grow: 1; /* 입력창 제외한 모든 높이 차지 */
+  overflow-y: auto;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.chat-message {
+  max-width: 70%;
+  padding: 12px 18px;
+  border-radius: 18px;
+  line-height: 1.6;
+  font-size: 15px;
+}
+.chat-message p {
+  margin: 0;
+}
+
+/* 사용자 메시지 (오른쪽 정렬) */
+.chat-message.user {
+  background-color: #007bff;
+  color: white;
+  align-self: flex-end;
+  border-bottom-right-radius: 5px;
+}
+
+/* AI 메시지 (왼쪽 정렬) */
+.chat-message.ai {
+  background-color: #f1f3f5;
+  color: #333;
+  align-self: flex-start;
+  border-bottom-left-radius: 5px;
+}
+
+/* AI 메시지 - 카드 형태 (result-card 재활용) */
+.result-card-chat {
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 0;
+  margin: -5px; /* .chat-message의 패딩 고려 */
+  overflow: hidden;
+}
+.result-card-chat h4 {
+  margin: 0;
+  padding: 15px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+.result-card-chat p {
+  padding: 15px 20px;
+  font-size: 14px;
+}
+.result-card-chat .tags {
+  padding: 0 20px 15px 20px;
+  margin-top: 0;
+}
+
+/* AI 로딩 스피너 (점 3개) */
+.spinner-dots {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+}
+.spinner-dots .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #adb5bd;
+  animation: bounce 1.2s infinite ease-in-out both;
+}
+.spinner-dots .dot:nth-of-type(1) { animation-delay: -0.32s; }
+.spinner-dots .dot:nth-of-type(2) { animation-delay: -0.16s; }
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1.0); }
+}
+
+
+/* 3-2. 메시지 입력 영역 (기존 .prompt-card CSS 재활용) */
+.chat-input-area {
+  padding: 20px 30px;
+  border-top: 1px solid #dee2e6;
+  background-color: #ffffff;
+  /* .prompt-card의 스타일을 가져옴 */
+  display: flex;
+  align-items: flex-end;
+  gap: 15px;
+}
+.chat-input-area .prompt-input-area {
+  flex-grow: 1;
+  min-height: 24px; /* 최소 높이 */
+  max-height: 150px; /* 최대 높이 (스크롤 생성) */
+  height: 24px; /* 기본 높이 (1줄) */
+  margin-bottom: 0;
+  padding: 12px 15px;
+}
+.chat-input-area .prompt-button {
+  height: 48px; /* textarea 패딩 포함 높이와 맞춤 */
+}

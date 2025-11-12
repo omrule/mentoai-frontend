@@ -1,38 +1,51 @@
 /* src/components/Navbar.css */
+
 .navbar {
-  width: 250px;
-  height: 100vh;
+  width: 100%;
+  height: 60px; /* 상단바 높이 */
   background-color: #007bff;
-  padding: 20px;
+  padding: 0 30px; /* 좌우 패딩 */
   color: white;
   display: flex;
-  flex-direction: column;
-  justify-content: space-between; /* 메뉴와 로그아웃 버튼을 위아래로 분리 */
-  box-sizing: border-box; /* 패딩이 너비/높이에 포함되도록 설정 */
-  position: fixed; /* 화면에 고정 */
-  left: 0;
+  flex-direction: row; /* 수평 정렬 */
+  align-items: center; /* 세로 중앙 정렬 */
+  justify-content: flex-start; /* 왼쪽부터 정렬 */
+  box-sizing: border-box;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  
+  position: fixed; 
   top: 0;
+  left: 0;
+  z-index: 100;
 }
 
+/* [수정] NavLink(a태그) 자체에 스타일 적용 */
 .navbar-logo {
   font-size: 24px;
   font-weight: bold;
-  margin-bottom: 40px;
+  margin-right: 40px; /* 로고와 메뉴 사이 간격 */
+  color: white; /* 👈 [추가] 색상 직접 지정 */
+  text-decoration: none; /* 👈 [추가] 밑줄 제거 */
 }
 
+/* [삭제] 이 선택자는 더 이상 필요 없음
 .navbar-logo a {
   color: white;
   text-decoration: none;
 }
+*/
 
 .navbar-menu {
   list-style: none;
   padding: 0;
   margin: 0;
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
 }
 
 .navbar-menu li {
-  margin-bottom: 20px;
+  margin-bottom: 0;
 }
 
 .navbar-menu a {
@@ -40,13 +53,14 @@
   text-decoration: none;
   font-size: 16px;
   display: block;
-  padding: 10px;
+  padding: 10px 15px;
   border-radius: 5px;
   transition: background-color 0.2s;
 }
 
 .navbar-menu a:hover {
   background-color: #0056b3;
+  color: white;
 }
 
 .navbar-menu a.active {
@@ -55,13 +69,9 @@
   color: white;
 }
 
-.navbar-footer {
-  padding: 10px 0;
-}
-
 .logout-button {
-  width: 100%;
-  padding: 10px;
+  width: auto;
+  padding: 8px 16px;
   font-size: 15px;
   font-weight: bold;
   color: white;
@@ -70,6 +80,8 @@
   border-radius: 5px;
   cursor: pointer;
   transition: all 0.2s;
+  
+  margin-left: auto; 
 }
 
 .logout-button:hover {

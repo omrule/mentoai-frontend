@@ -8,7 +8,7 @@
  * @param {Array<object>} retrievedContext - [신규] 백엔드 RAG API가 벡터 DB에서 검색해 온 정보 (예: sampleResults)
  * @returns {string} - 최종적으로 AI에게 전달될 가공된 프롬프트
  */
-export const createFinalPrompt = (userPrompt, userProfile, retrievedContext) => { // <-- 3번째 인자 추가
+export const createFinalPrompt = (userPrompt, userProfile, retrievedContext) => { 
   const profile = userProfile || {};
   const university = profile.university || '정보 없음';
   const major = profile.major || '정보 없음';
@@ -24,8 +24,6 @@ export const createFinalPrompt = (userPrompt, userProfile, retrievedContext) => 
   if (retrievedContext && retrievedContext.length > 0) {
     contextInfo = retrievedContext
       .map((item, index) => {
-        // sampleResults의 구조(title, summary)를 기반으로 포맷팅
-        // (백엔드에서 받은 데이터 구조에 맞게 수정 필요)
         return `[검색된 정보 ${index + 1}: ${item.title}]\n${item.summary}\n`;
       })
       .join('\n');
@@ -34,7 +32,8 @@ export const createFinalPrompt = (userPrompt, userProfile, retrievedContext) => 
 
   const systemInstruction = `
     # ROLE
-    당신은 대한민국 대학생의 진로 설계를 돕는 전문 AI 멘토 '멘토아이'입니다.
+    {/* [수정] 멘토아이 -> MentoAI */}
+    당신은 대한민국 대학생의 진로 설계를 돕는 전문 AI 멘토 'MentoAI'입니다.
 
     # CRITICAL INSTRUCTIONS (RAG) 
     - 당신의 최우선 임무는 [STUDENT QUESTION]에 답하기 위해, [RETRIEVED CONTEXT] 섹션에 제공된 '검색된 정보'를 '반드시' 활용하는 것입니다.
@@ -70,7 +69,6 @@ ${userPrompt.trim()}
 [MENTOAI's RESPONSE]
 `.trim();
 
-  // 개발자 도구 콘솔에서 최종 생성된 프롬프트를 확인할 수 있습니다.
   console.log("--- RAG 기반 최종 생성된 프롬프트 ---");
   console.log(finalPrompt);
   console.log("-----------------------------------");

@@ -9,7 +9,7 @@ body {
 }
 
 .App {
-  display: flex;
+  display: block;
 }
 
 /* App 전체를 덮는 un-authed 상태의 스타일 추가 */
@@ -22,21 +22,30 @@ body {
 
 .content {
   flex-grow: 1;
-  padding: 30px;
+  padding: 30px; /* 👈 (기본 패딩 30px) */
   background-color: #ffffff;
-  min-height: 100vh;
-  margin-left: 250px; /* Navbar 너비만큼 왼쪽 여백 추가 */
+  min-height: calc(100vh - 60px);
+  margin-left: 0; 
+  margin-top: 60px; /* 상단바 높이만큼 밀어내기 */
   box-sizing: border-box;
 }
 
-/* [신규 추가]
-  로그인/프로필 설정 페이지처럼 Navbar가 없을 때 사용할 클래스.
-  margin-left가 없고, padding은 0입니다 (AuthPage.js가 스스로 처리).
-*/
+/* [신규] 채팅 페이지 전용 content 클래스 (패딩 없음) */
+.content-chat {
+  flex-grow: 1;
+  padding: 0; /* 👈 (패딩 0) */
+  background-color: #ffffff;
+  min-height: calc(100vh - 60px); 
+  margin-left: 0; 
+  margin-top: 60px; 
+  box-sizing: border-box;
+}
+
 .content-full {
   flex-grow: 1;
-  background-color: #f8f9fa; /* auth-container와 동일한 배경색 */
+  background-color: #f8f9fa;
   min-height: 100vh;
-  margin-left: 0; /* 왼쪽 여백 없음 */
+  margin-left: 0;
+  margin-top: 0; /* 로그인 페이지 등은 상단 마진 없음 */
   box-sizing: border-box;
 }
