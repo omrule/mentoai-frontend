@@ -1,59 +1,37 @@
-import React, { useState } from 'react';
-// import { useNavigate } from 'react-router-dom'; 
-import { useAuth } from '../contexts/AuthContext';
-// import { useGoogleLogin } from '@react-oauth/google'; // (주석)
-// import { loginWithGoogle } from '../api/authApi'; // (주석)
+import React from 'react';
+// [수정] 모든 훅(useState, useAuth, useGoogleLogin) 삭제
+// [수정] useNavigate도 삭제
 import './Page.css';
 
+// [신규] 백엔드 서버 주소
+const API_BASE_URL = 'https://mentoai.onrender.com';
+
+// [신규] 백엔드의 Google OAuth2 시작 주소
+const GOOGLE_LOGIN_START_URL = `${API_BASE_URL}/auth/google/start`;
+
+
 function AuthPage() {
-  const auth = useAuth();
-  // const navigate = useNavigate(); // [삭제]
-  const [isLoading, setIsLoading] = useState(false); 
-
-  // --- [주석] 실제 Google 로그인 로직 ---
-  /*
-  const handleGoogleLogin = useGoogleLogin({ ... });
-  */
-  // --- 여기까지 실제 Google 로그인 로직 주석 처리 ---
-
-
-  // [신규] 버튼 클릭 시 '가짜' 유저 정보를 Context에 저장
-  const handleTempLoginClick = () => {
-    setIsLoading(true);
-    console.log("임시 로그인: 가짜 유저 정보를 Context에 주입합니다.");
-
-    // 1. ProfileSetupRoute를 통과하기 위한 '가짜' 사용자 객체
-    const fakeUser = {
-      userId: "temp-user-12345",
-      name: "임시 사용자",
-      accessToken: "temp-fake-token-for-auth-api",
-      refreshToken: "temp-fake-refresh-token",
-      expiresAt: new Date().getTime() + 3600 * 1000,
-      isNewUser: true,
-      profileComplete: false 
-    };
-
-    // 2. AuthContext에 이 가짜 유저를 등록 (이제 API 호출 안 함)
-    auth.login(fakeUser);
-
-    // 3. [삭제] navigate('/profile-setup');
-  };
+  // [수정] 임시 로그인/실제 로그인 로직 모두 제거
 
   return (
     <div className="auth-container">
       <div className="auth-card">
-        {/* [복원] MentoAI 로고 복원 */}
         <h1 className="auth-logo">MentoAI</h1>
         <p className="auth-subtitle">
           AI와 함께 당신의 진로를 설계하고<br />
           맞춤형 활동을 추천받아 보세요.
         </p>
-        <button 
+
+        {/* [수정] 
+          모든 onClick 이벤트를 제거하고,
+          백엔드의 로그인 시작 페이지로 이동하는
+          단순 <a> 태그로 변경합니다.
+        */}
+        <a 
+          href={GOOGLE_LOGIN_START_URL} 
           className="google-login-button" 
-          onClick={handleTempLoginClick}
-          disabled={isLoading} 
+          style={{ textDecoration: 'none' }}
         >
-          {isLoading ? '로그인 중...' : (
             <>
               <svg className="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -63,8 +41,8 @@ function AuthPage() {
               </svg>
               Google 계정으로 시작하기
             </>
-          )}
-        </button>
+        </a>
+
         <p className="auth-helper-text">
           계속 진행하면 MentoAI의 서비스 이용약관 및<br/>개인정보 처리방침에 동의하는 것으로 간주됩니다.
         </p>

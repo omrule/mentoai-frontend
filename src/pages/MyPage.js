@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 // import { saveUserProfile } from '../api/authApi'; // API 호출 임시 주석 처리
 import './Page.css';
-import CustomSelect from '../components/CustomSelect';
+import CustomSelect from '../components/CustomSelect'; // [신규] 커스텀 셀렉트 임포트
 
+// [신규] CustomSelect에 전달할 옵션 정의
 const skillOptions = [
   { value: '상', label: '상 (업무 활용)' },
   { value: '중', label: '중 (토이 프로젝트)' },
@@ -15,6 +16,7 @@ const experienceOptions = [
 ];
 
 function MyPage() {
+  // --- 데모를 위해, 사용자의 프로필 정보 예시를 미리 채워둡니다. ---
   const [education, setEducation] = useState({ school: '멘토대학교', major: '컴퓨터공학과', grade: 3 });
   const [careerGoal, setCareerGoal] = useState('AI 엔지니어');
   
@@ -34,6 +36,7 @@ function MyPage() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  // -----------------------------------------------------------------
 
   // --- SkillFit 핸들러 ---
   const handleAddSkill = () => {
@@ -134,9 +137,9 @@ function MyPage() {
         {/* --- 2. 기술 스택 섹션 (SkillFit) --- */}
         <div className="form-section">
           <h3>기술 스택</h3>
-          {/* [수정] 너비 제어를 위해 'skill-group' 클래스 추가 */}
           <div className="input-group skill-group">
             <input type="text" placeholder="기술 이름 (예: React)" value={currentSkill.name} onChange={(e) => setCurrentSkill({ ...currentSkill, name: e.target.value })} />
+            {/* [수정] <select>를 <CustomSelect>로 교체 */}
             <CustomSelect
               options={skillOptions}
               value={currentSkill.level}
@@ -158,6 +161,7 @@ function MyPage() {
         <div className="form-section">
           <h3>주요 경험</h3>
           <div className="input-group experience-group">
+            {/* [수정] <select>를 <CustomSelect>로 교체 */}
             <CustomSelect
               options={experienceOptions}
               value={currentExperience.type}
