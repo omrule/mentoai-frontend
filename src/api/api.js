@@ -12,6 +12,7 @@ const getAuthData = () => {
   try {
     const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
     return { 
+      // [수정] AuthResponse 스키마에 맞게 경로 변경
       userId: storedUser ? storedUser.user.userId : null
     };
   } catch (e) {
@@ -21,19 +22,16 @@ const getAuthData = () => {
 
 // --- Auth APIs (인증) ---
 
-// [신규] POST /users (Google 토큰으로 MentoAI 로그인/회원가입)
-export const loginWithGoogle = async (googleTokenResponse) => {
+// [수정] POST /users (Google 토큰이 아닌, Google 사용자 정보로 MentoAI 로그인)
+export const loginWithGoogle = async (googleUserData) => {
   try {
     // 백엔드 UserUpsert 스키마에 맞게 데이터 가공
-    // (백엔드가 access_token만 받는지, 아니면 google의 'sub' ID를 원하는지 확인 필요)
-    // 우선 access_token을 'providerUserId'로 보낸다고 가정합니다.
     const payload = {
       authProvider: "GOOGLE",
-      providerUserId: googleTokenResponse.access_token, // 👈 백엔드와 협의 필요!
-      email: "temp@example.com", // 👈 Google 토큰에서 파싱해야 하나, API 명세에 없음
-      name: "Temp Name"           // 👈 이것도 임시값
-      // providerUserId에 access_token을 보내면, 백엔드가 Google에 유저 정보를
-      // 직접 요청하여 email, name을 채우는 방식일 수 있습니다.
+      providerUserId: googleUserData.providerUserId, // Google의 'sub' ID
+      email: googleUserData.email,
+      name: googleUserData.name,
+      profileImageUrl: googleUserData.profileImageUrl // Google 프로필 사진
     };
 
     // [수정] /auth/google/start가 아닌 POST /users 호출
@@ -62,6 +60,7 @@ export const checkCurrentUser = async () => {
 // (POST /auth/logout)
 export const logoutUser = async () => {
   try {
+    // apiClient가 헤더에 토큰을 자동으로 붙여서 요청합니다.
     await apiClient.post('/auth/logout', null);
     return { success: true };
   } catch (error) {
@@ -69,9 +68,6 @@ export const logoutUser = async () => {
     return { success: false };
   }
 };
-
-// (POST /auth/refresh)
-// [삭제] refreshAccessToken (apiClient의 응답 인터셉터가 자동으로 처리)
 
 // --- User Profile APIs (프로필) ---
 
@@ -81,10 +77,15 @@ export const getUserProfile = async () => {
     const { userId } = getAuthData();
     if (!userId) throw new Error("User ID not found");
     
+    // apiClient가 헤더에 토큰을 자동으로 붙여서 요청합니다.
     const response = await apiClient.get(`/users/${userId}/profile`);
     return { success: true, data: response.data }; // UserProfile 스키마 반환
   } catch (error) {
     console.error("프로필 불러오기 실패:", error);
+    // [수정] 프로필이 없는 신규 유저는 404가 정상, 성공으로 처리
+    if (error.response && error.response.status === 404) {
+      return { success: false, data: null, isNewUser: true };
+    }
     return { success: false, data: null };
   }
 };
@@ -95,6 +96,7 @@ export const saveUserProfile = async (profileData) => {
     const { userId } = getAuthData();
     if (!userId) throw new Error("User ID not found");
 
+    // apiClient가 헤더에 토큰을 자동으로 붙여서 요청합니다.
     const response = await apiClient.put(
       `/users/${userId}/profile`, 
       profileData // UserProfileUpsert 스키마
@@ -115,15 +117,16 @@ export const getCalendarEvents = async () => {
     if (!userId) throw new Error("User ID not found");
     
     const response = await apiClient.get(`/users/${userId}/calendar/events`);
+    // 백엔드 스키마(CalendarEvent)를 프론트엔드 state(id, title, date)에 맞게 변환
     const formattedEvents = response.data.map(event => ({
       id: event.eventId,
       title: event.activityTitle || `이벤트 #${event.eventId}`, // (API 명세에 title이 없음)
-      date: event.startAt.split('T')[0]
+      date: event.startAt.split('T')[0] // 'YYYY-MM-DDT...' -> 'YYYY-MM-DD'
     }));
     return { success: true, data: formattedEvents };
   } catch (error) {
     console.error("캘린더 일정 불러오기 실패:", error);
-    return { success: true, data: [] }; 
+    return { success: true, data: [] }; // 실패 시 빈 배열 반환
   }
 };
 
@@ -135,9 +138,8 @@ export const createCalendarEvent = async (newEvent) => {
 
     const payload = {
       // 캘린더에 일정을 추가하려면, 추천받은 활동의 'activityId'가 필요합니다.
-      // 'PromptInput'에서 캘린더 추가 시 이 ID를 넘겨받도록 수정해야 합니다.
       activityId: newEvent.activityId || 1, // '1'은 임시 ID
-      startAt: `${newEvent.date}T00:00:00Z` 
+      startAt: `${newEvent.date}T00:00:00Z` // (시간은 임의로 설정)
     };
     
     const response = await apiClient.post(
@@ -164,7 +166,9 @@ export const getRecommendations = async (prompt) => {
     };
 
     const response = await apiClient.post('/recommend', payload);
+    
     // [수정] RecommendResponse 스키마에 따라 AI의 텍스트 답변(reason)을 추출
+    // API 명세의 'reason'은 LLM 요약/근거입니다.
     const aiTextResponse = response.data.items
       .map(item => `**${item.activity.title}**\n${item.reason}`)
       .join('\n\n');
