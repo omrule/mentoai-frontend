@@ -92,10 +92,10 @@
   transition: all 0.2s ease-in-out;
   display: flex; 
   align-items: center; 
-  justify-content: center; /* 👈 텍스트 중앙 정렬 */
+  justify-content: center; /* 👈 이 속성이 텍스트를 중앙 정렬합니다. */
   gap: 12px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  box-sizing: border-box; 
+  box-sizing: border-box; /* 👈 <a> 태그 호환성을 위해 추가 */
 }
 .google-login-button:hover { background-color: #f8f9fa; border-color: #ced4da; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
 .google-icon { width: 22px; height: 22px; }
