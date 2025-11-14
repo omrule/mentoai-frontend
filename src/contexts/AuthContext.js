@@ -24,6 +24,31 @@ export const AuthProvider = ({ children }) => {
         // API가 반환한 AuthResponse (user + tokens)를 저장
         sessionStorage.setItem('mentoUser', JSON.stringify(response.data));
         setUser(response.data);
+        
+        // [신규] 로그인 성공 후 프로필 정보도 바로 가져옴
+        const profileResponse = await getUserProfile();
+        if (profileResponse.success) {
+          const finalUserData = {
+            ...response.data,
+            user: { // User 스키마
+              ...response.data.user,
+              profileComplete: true // 프로필이 있으니 true
+            }
+          };
+          setUser(finalUserData);
+          sessionStorage.setItem('mentoUser', JSON.stringify(finalUserData));
+        } else {
+          // 프로필이 없는 신규 유저
+          const finalUserData = {
+            ...response.data,
+            user: {
+              ...response.data.user,
+              profileComplete: false // 프로필이 없으니 false
+            }
+          };
+          setUser(finalUserData);
+          sessionStorage.setItem('mentoUser', JSON.stringify(finalUserData));
+        }
       } else {
         throw new Error("loginWithGoogle API failed");
       }
