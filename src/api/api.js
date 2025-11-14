@@ -1,7 +1,13 @@
 // src/api/api.js
+import axios from 'axios';
 import apiClient from './apiClient';
 
+// 백엔드 서버 주소 (refresh용)
+const API_BASE_URL = 'https://mentoai.onrender.com';
+
 // --- Helper Functions ---
+
+// sessionStorage에서 토큰과 userId를 안전하게 가져옵니다.
 const getAuthData = () => {
   try {
     const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
