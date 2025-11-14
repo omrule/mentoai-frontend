@@ -39,7 +39,6 @@ export const AuthProvider = ({ children }) => {
         
         // 4. 프로필 정보가 있는지 확인
         const profileResponse = await getUserProfile();
-        // [수정] profileResponse.success가 아닌, isNewUser로 확인
         const profileComplete = !profileResponse.isNewUser; 
 
         const finalUserData = {

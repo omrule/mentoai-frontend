@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
-import { useGoogleLogin } from '@react-oauth/google'; // [복원]
-import { useAuth } from '../contexts/AuthContext'; // [복원]
+import { useGoogleLogin } from '@react-oauth/google';
+import { useAuth } from '../contexts/AuthContext';
 import './Page.css';
 
 function AuthPage() {
-  const auth = useAuth(); // [복원]
-  const [isLoading, setIsLoading] = useState(false); // [복원]
+  const auth = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
-  // [복원] 실제 Google 로그인 로직
+  // 실제 Google 로그인 로직
   const handleGoogleLogin = useGoogleLogin({
     // Google 로그인 성공 시 실행되는 함수
     onSuccess: async (tokenResponse) => {
       setIsLoading(true);
       try {
-        // [수정] AuthContext의 login 함수로 Google 토큰을 전달
+        // AuthContext의 login 함수로 Google 토큰을 전달
         // 이 함수가 Google userinfo API -> MentoAI 'POST /users' API를 호출
         await auth.login(tokenResponse);
         
@@ -44,13 +44,12 @@ function AuthPage() {
           맞춤형 활동을 추천받아 보세요.
         </p>
         
-        {/* [수정] <a> 태그 -> <button> 태그로 복원 */}
         <button 
           className="google-login-button" 
-          onClick={() => !isLoading && handleGoogleLogin()} // [복원]
-          disabled={isLoading} // [복원]
+          onClick={() => !isLoading && handleGoogleLogin()} 
+          disabled={isLoading} 
         >
-          {isLoading ? '로그인 중...' : ( // [복원]
+          {isLoading ? '로그인 중...' : ( 
             <>
               <svg className="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>

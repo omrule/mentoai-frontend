@@ -58,7 +58,7 @@ apiClient.interceptors.response.use(
         return new Promise(function(resolve, reject) {
           failedQueue.push({ resolve, reject });
         }).then(token => {
-          originalRequest.headers['Authorization'] = 'Bearer 'D + token;
+          originalRequest.headers['Authorization'] = 'Bearer ' + token;
           return axios(originalRequest);
         });
       }
