@@ -8,60 +8,34 @@ function OAuthCallback() {
   const navigate = useNavigate();
   const auth = useAuth();
 
-  // [!!! 핵심 수정 !!!]
-  // 1. useEffect는 하나만 존재합니다.
-  // 2. 모든 로직은 이 useEffect 안에 있습니다.
   useEffect(() => {
     
-    // 3. (레이스 컨디션 방지) 
-    //    1차 렌더링: searchParams.toString() === '' 이므로 return.
-    if (searchParams.toString() === '') {
-      return; 
-    }
+    // [!!! 배포 확인용 테스트 코드 !!!]
+    // Vercel이 이 새 코드를 실행했는지 확인하기 위해
+    // 무조건 이 alert 창을 띄웁니다.
+    alert('--- [새로운 코드 배포 성공!] ---');
 
-    // 4. (URL 파싱 완료 후 2차 렌더링)
-    //    searchParams.toString()이 "?accessToken=..."이 되어
-    //    이 코드가 실행됩니다.
+    
+    // --- (이하 모든 기존 로직을 임시 주석 처리) ---
+    /*
+    if (searchParams.toString() === '') {
+      return; 
+    }
+
     const accessToken = searchParams.get('accessToken');
     const userId = searchParams.get('userId');
 
     if (accessToken && userId) {
-      // [정상 경로] 토큰과 ID가 모두 있음
-      const refreshToken = searchParams.get('refreshToken');
-      const name = searchParams.get('name');
-      const isNewUser = searchParams.get('isNewUser') === 'true'; 
-      const profileComplete = searchParams.get('profileComplete') === 'true';
+      // ... (login logic) ...
+    } else if (accessToken && !userId) {
+      alert('[프론트엔드 감지] 백엔드가 accessToken은 보냈으나, userId를 누락했습니다.');
+      navigate('/login', { replace: true });
+    } else if (!accessToken) {
+      alert('로그인에 실패했습니다. (토큰 수신 오류)');
+      navigate('/login', { replace: true });
+    }
+    */
 
-      const userData = {
-        userId: userId,
-        name: name,
-        isNewUser: isNewUser,
-        profileComplete: profileComplete,
-        accessToken: accessToken,
-        refreshToken: refreshToken
-      };
-      
-      auth.login(userData);
-
-      if (!profileComplete) {
-        navigate('/profile-setup', { replace: true });
-      } else {
-        navigate('/prompt', { replace: true });
-      }
-      
-  } else if (accessToken && !userId) {
-    // [백엔드 오류] accessToken은 있으나 userId가 없음
-    alert('[프론트엔드 감지] 백엔드가 accessToken은 보냈으나, userId를 누락했습니다.');
-    navigate('/login', { replace: true });
-
-  } else if (!accessToken) {
-    // [토큰 수신 오류] accessToken 자체가 없음
-    alert('로그인에 실패했습니다. (토큰 수신 오류)');
-    navigate('/login', { replace: true });
-  }
-
-  // [!!! 핵심 수정 !!!]
-  // 5. 의존성 배열에 searchParams.toString()을 넣습니다.
   }, [searchParams.toString(), navigate, auth]); 
 
   // 로딩 스피너를 보여줍니다.
