@@ -1,14 +1,41 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useGoogleLogin } from '@react-oauth/google'; // [복원]
+import { useAuth } from '../contexts/AuthContext'; // [복원]
+// [삭제] useNavigate 제거
 import './Page.css';
 
-// 백엔드 서버 주소
-const API_BASE_URL = 'https://mentoai.onrender.com';
-
-// 백엔드의 Google OAuth2 시작 주소
-const GOOGLE_LOGIN_START_URL = `${API_BASE_URL}/auth/google/start`;
-
-
 function AuthPage() {
+  const auth = useAuth(); // [복원]
+  const [isLoading, setIsLoading] = useState(false); // [복원]
+
+  // [복원] 실제 Google 로그인 로직
+  const handleGoogleLogin = useGoogleLogin({
+    // Google 로그인 성공 시 실행되는 함수
+    onSuccess: async (tokenResponse) => {
+      setIsLoading(true);
+      try {
+        // [수정] AuthContext의 login 함수로 Google 토큰을 전달
+        // 이 함수가 백엔드 API(POST /users)를 호출할 것임
+        await auth.login(tokenResponse);
+        
+        // (성공 시 AuthContext가 user 상태를 변경하고,
+        //  App.js의 PublicRoute가 자동으로 리디렉션함)
+
+      } catch (error) {
+        // AuthContext.js의 login 함수가 실패한 경우 (백엔드 오류 등)
+        console.error("로그인 처리 중 에러 발생:", error);
+        alert('로그인에 실패했습니다. (서버 오류 또는 CORS)');
+        setIsLoading(false); // [필수] 실패 시 로딩 상태 해제
+      }
+    },
+    // Google 로그인 실패 시
+    onError: (error) => {
+      console.error('Google 로그인 실패:', error);
+      alert('Google 로그인에 실패했습니다. 다시 시도해주세요.');
+      setIsLoading(false); 
+    },
+  });
+
   return (
     <div className="auth-container">
       <div className="auth-card">
@@ -17,15 +44,14 @@ function AuthPage() {
           AI와 함께 당신의 진로를 설계하고<br />
           맞춤형 활동을 추천받아 보세요.
         </p>
-
-        {/* [수정] 
-          <a> 태그가 <button> 태그 대신 이 클래스를 직접 사용합니다.
-        */}
-        <a 
-          href={GOOGLE_LOGIN_START_URL} 
+        
+        {/* [수정] <a> 태그 -> <button> 태그로 복원 */}
+        <button 
           className="google-login-button" 
-          style={{ textDecoration: 'none' }}
+          onClick={() => !isLoading && handleGoogleLogin()} // [복원]
+          disabled={isLoading} // [복원]
         >
+          {isLoading ? '로그인 중...' : ( // [복원]
             <>
               <svg className="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -35,7 +61,8 @@ function AuthPage() {
               </svg>
               Google 계정으로 시작하기
             </>
-        </a>
+          )}
+        </button>
 
         <p className="auth-helper-text">
           계속 진행하면 MentoAI의 서비스 이용약관 및<br/>개인정보 처리방침에 동의하는 것으로 간주됩니다.

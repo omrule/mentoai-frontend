@@ -9,21 +9,22 @@ import ScheduleCalendar from './pages/ScheduleCalendar';
 import MyPage from './pages/MyPage';
 import { useAuth } from './contexts/AuthContext';
 import './App.css';
-import OAuthCallback from './pages/OAuthCallback'; 
+// [삭제] import OAuthCallback from './pages/OAuthCallback'; 
 
 // 로그인한 사용자만 접근 가능한 페이지를 감싸는 컴포넌트
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div>로딩 중...</div>; // 인증 상태 확인 중 로딩 스피너
+    return <div>로딩 중...</div>; 
   }
 
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  if (user && !user.profileComplete) {
+  // [수정] AuthResponse 스키마에 따라 경로 변경
+  if (user && !user.user.profileComplete) {
     return <Navigate to="/profile-setup" replace />;
   }
   
@@ -38,11 +39,13 @@ function PublicRoute({ children }) {
     return <div>로딩 중...</div>;
   }
 
-  if (user && user.profileComplete) {
+  // [수정] AuthResponse 스키마에 따라 경로 변경
+  if (user && user.user.profileComplete) {
     return <Navigate to="/recommend" replace />;
   }
 
-  if (user && !user.profileComplete) {
+  // [수정] AuthResponse 스키마에 따라 경로 변경
+  if (user && !user.user.profileComplete) {
     return <Navigate to="/profile-setup" replace />;
   }
 
@@ -61,7 +64,8 @@ function ProfileSetupRoute({ children }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (user && user.profileComplete) {
+  // [수정] AuthResponse 스키마에 따라 경로 변경
+  if (user && user.user.profileComplete) {
     return <Navigate to="/recommend" replace />;
   }
   
@@ -71,7 +75,7 @@ function ProfileSetupRoute({ children }) {
 
 function App() {
   const { user, loading } = useAuth();
-  const location = useLocation(); // 현재 경로를 알기 위해 useLocation 사용
+  const location = useLocation(); 
 
   if (loading) {
     return (
@@ -81,23 +85,21 @@ function App() {
     );
   }
 
-  const showNavbar = user && user.profileComplete && 
+  // [수정] AuthResponse 스키마에 따라 경로 변경
+  const showNavbar = user && user.user.profileComplete && 
                      location.pathname !== '/login' && 
-                     location.pathname !== '/profile-setup' && 
-                     location.pathname !== '/oauth/callback';
+                     location.pathname !== '/profile-setup';
+                     // [삭제] /oauth/callback 경로 삭제
   
   const appClassName = showNavbar ? "App" : "App-unauthed";
 
-  // [신규] main 태그의 클래스를 동적으로 결정하는 함수
   const getContentClass = () => {
     if (!showNavbar) {
-      return "content-full"; // 로그인/프로필 페이지 (패딩 0)
+      return "content-full"; 
     }
-    // [신규] /prompt (채팅) 페이지일 경우 패딩이 없는 chat 클래스 적용
     if (location.pathname === '/prompt') {
       return "content-chat"; 
     }
-    // 나머지 모든 페이지는 기본 content 클래스 적용 (패딩 30px)
     return "content";
   };
 
@@ -105,10 +107,9 @@ function App() {
     <div className={appClassName}>
       {showNavbar && <Navbar />}
       
-      {/* [수정] className을 동적으로 할당 */}
       <main className={getContentClass()}>
         <Routes>
-          {/* 1. 로그인/프로필 설정/콜백 경로 */}
+          {/* 1. 로그인/프로필 설정 경로 */}
           <Route path="/login" element={
             <PublicRoute>
               <AuthPage />
@@ -119,7 +120,8 @@ function App() {
               <ProfileSetup />
             </ProfileSetupRoute>
           } />
-          <Route path="/oauth/callback" element={<OAuthCallback />} />
+
+          {/* [삭제] /oauth/callback 경로 삭제 */}
 
 
           {/* 2. 메인 서비스 경로 */}
@@ -147,7 +149,8 @@ function App() {
           {/* 3. 기본 경로 리디렉션 */}
           <Route path="/" element={
             user ? 
-              (user.profileComplete ? <Navigate to="/recommend" /> : <Navigate to="/profile-setup" />) : 
+              // [수정] AuthResponse 스키마에 따라 경로 변경
+              (user.user.profileComplete ? <Navigate to="/recommend" /> : <Navigate to="/profile-setup" />) : 
               <Navigate to="/login" />
           } />
 
