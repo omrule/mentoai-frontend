@@ -14,10 +14,9 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use((config) => {
   try {
     const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
+    // [수정] 토큰 경로를 AuthResponse 스키마에 맞게 수정
     const token = storedUser ? storedUser.tokens.accessToken : null;
 
-    // config.headers.Authorization이 없는 경우에만 토큰을 추가합니다.
-    // (토큰 갱신 요청은 이 헤더가 없어야 할 수 있으므로)
     if (token && !config.headers.Authorization) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
@@ -29,8 +28,21 @@ apiClient.interceptors.request.use((config) => {
   return Promise.reject(error);
 });
 
-// [신규] 401 오류 시 토큰 자동 갱신 로직 (선택적이지만 강력히 권장)
-// (이 로직은 AuthContext.js와 함께 작동합니다)
+// [신규] 401 오류 시 토큰 자동 갱신 로직 (API 명세서의 /auth/refresh)
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
 apiClient.interceptors.response.use(
   (response) => {
     return response; // 성공 시 그대로 반환
@@ -41,6 +53,17 @@ apiClient.interceptors.response.use(
     // 401(Unauthorized) 오류이고, 재시도한 적이 없다면
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true; // 재시도 플래그 설정
+
+      if (isRefreshing) {
+        return new Promise(function(resolve, reject) {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          originalRequest.headers['Authorization'] = 'Bearer ' + token;
+          return axios(originalRequest);
+        });
+      }
+
+      isRefreshing = true;
 
       try {
         const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
@@ -64,15 +87,19 @@ apiClient.interceptors.response.use(
         apiClient.defaults.headers.common['Authorization'] = 'Bearer ' + accessToken;
         originalRequest.headers['Authorization'] = 'Bearer ' + accessToken;
 
+        processQueue(null, accessToken);
+        isRefreshing = false;
+
         // 실패했던 원본 요청 재시도
         return apiClient(originalRequest);
 
       } catch (refreshError) {
         // 리프레시 실패 시 (리프레시 토큰 만료 등)
         console.error("Token refresh failed:", refreshError);
+        processQueue(err, null);
+        isRefreshing = false;
+        
         sessionStorage.removeItem('mentoUser');
-        // AuthContext가 이 오류를 감지하고 로그아웃 처리하도록 이벤트를 보내거나,
-        // 페이지를 강제로 리디렉션합니다.
         window.location.href = '/login'; 
         return Promise.reject(refreshError);
       }

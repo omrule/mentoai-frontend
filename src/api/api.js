@@ -6,13 +6,10 @@ import apiClient from './apiClient';
 const API_BASE_URL = 'https://mentoai.onrender.com';
 
 // --- Helper Functions ---
-
-// sessionStorage에서 토큰과 userId를 안전하게 가져옵니다.
 const getAuthData = () => {
   try {
     const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
     return { 
-      // [수정] AuthResponse 스키마에 맞게 경로 변경
       userId: storedUser ? storedUser.user.userId : null
     };
   } catch (e) {
@@ -22,7 +19,7 @@ const getAuthData = () => {
 
 // --- Auth APIs (인증) ---
 
-// [수정] POST /users (Google 토큰이 아닌, Google 사용자 정보로 MentoAI 로그인)
+// [수정] POST /users (Google 사용자 정보로 MentoAI 로그인)
 export const loginWithGoogle = async (googleUserData) => {
   try {
     // 백엔드 UserUpsert 스키마에 맞게 데이터 가공
@@ -47,11 +44,10 @@ export const loginWithGoogle = async (googleUserData) => {
 // (GET /auth/me)
 export const checkCurrentUser = async () => {
   try {
-    // apiClient가 헤더에 토큰을 자동으로 붙여서 요청합니다.
     const response = await apiClient.get('/auth/me');
     return { success: true, data: response.data }; // User 스키마 반환
   } catch (error) {
-    console.warn("GET /auth/me 실패 (401 예상):", error.response);
+    console.warn("GET /auth/me 실패:", error.response);
     return { success: false, data: null };
   }
 };
@@ -59,7 +55,6 @@ export const checkCurrentUser = async () => {
 // (POST /auth/logout)
 export const logoutUser = async () => {
   try {
-    // apiClient가 헤더에 토큰을 자동으로 붙여서 요청합니다.
     await apiClient.post('/auth/logout', null);
     return { success: true };
   } catch (error) {
@@ -76,12 +71,10 @@ export const getUserProfile = async () => {
     const { userId } = getAuthData();
     if (!userId) throw new Error("User ID not found");
     
-    // apiClient가 헤더에 토큰을 자동으로 붙여서 요청합니다.
     const response = await apiClient.get(`/users/${userId}/profile`);
     return { success: true, data: response.data }; // UserProfile 스키마 반환
   } catch (error) {
     console.error("프로필 불러오기 실패:", error);
-    // [수정] 프로필이 없는 신규 유저는 404가 정상, isNewUser로 구분
     if (error.response && error.response.status === 404) {
       return { success: false, data: null, isNewUser: true };
     }
@@ -95,7 +88,6 @@ export const saveUserProfile = async (profileData) => {
     const { userId } = getAuthData();
     if (!userId) throw new Error("User ID not found");
 
-    // apiClient가 헤더에 토큰을 자동으로 붙여서 요청합니다.
     const response = await apiClient.put(
       `/users/${userId}/profile`, 
       profileData // UserProfileUpsert 스키마
@@ -116,16 +108,15 @@ export const getCalendarEvents = async () => {
     if (!userId) throw new Error("User ID not found");
     
     const response = await apiClient.get(`/users/${userId}/calendar/events`);
-    // 백엔드 스키마(CalendarEvent)를 프론트엔드 state(id, title, date)에 맞게 변환
     const formattedEvents = response.data.map(event => ({
       id: event.eventId,
-      title: event.activityTitle || `이벤트 #${event.eventId}`, // (API 명세에 title이 없음)
-      date: event.startAt.split('T')[0] // 'YYYY-MM-DDT...' -> 'YYYY-MM-DD'
+      title: event.activityTitle || `이벤트 #${event.eventId}`,
+      date: event.startAt.split('T')[0]
     }));
     return { success: true, data: formattedEvents };
   } catch (error) {
     console.error("캘린더 일정 불러오기 실패:", error);
-    return { success: true, data: [] }; // 실패 시 빈 배열 반환
+    return { success: true, data: [] }; 
   }
 };
 
@@ -136,9 +127,8 @@ export const createCalendarEvent = async (newEvent) => {
     if (!userId) throw new Error("User ID not found");
 
     const payload = {
-      // 캘린더에 일정을 추가하려면, 추천받은 활동의 'activityId'가 필요합니다.
       activityId: newEvent.activityId || 1, // '1'은 임시 ID
-      startAt: `${newEvent.date}T00:00:00Z` // (시간은 임의로 설정)
+      startAt: `${newEvent.date}T00:00:00Z` 
     };
     
     const response = await apiClient.post(
@@ -166,8 +156,6 @@ export const getRecommendations = async (prompt) => {
 
     const response = await apiClient.post('/recommend', payload);
     
-    // [수정] RecommendResponse 스키마에 따라 AI의 텍스트 답변(reason)을 추출
-    // API 명세의 'reason'은 LLM 요약/근거입니다.
     const aiTextResponse = response.data.items
       .map(item => `**${item.activity.title}**\n${item.reason}`)
       .join('\n\n');
