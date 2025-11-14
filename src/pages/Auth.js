@@ -6,17 +6,22 @@ import './Page.css';
 
 function AuthPage() {
   const auth = useAuth(); 
-  // [수정] boolean 대신 string (null: 기본, '...': 로딩 중)
-  const [loadingText, setLoadingText] = useState(null); 
+  
+  // [수정] 2개의 state로 분리하여 UI 깨짐 방지
+  // 1. isLoading: UI 구조(버튼 활성/비활성)를 제어 (Original 방식)
+  const [isLoading, setIsLoading] = useState(false);
+  // 2. loadingMessage: 로딩 중일 때 표시할 텍스트
+  const [loadingMessage, setLoadingMessage] = useState('로그인 중...');
 
   const handleGoogleLogin = useGoogleLogin({
     // Google 로그인 성공 시 실행되는 함수
     onSuccess: async (tokenResponse) => {
-      setLoadingText('Google 인증 완료. MentoAI 서버에 로그인합니다...');
+      setIsLoading(true); // <--- 버튼 비활성화
+      setLoadingMessage('Google 인증 완료. MentoAI 서버에 로그인합니다...');
 
       // [신규] 서버 응답이 8초 이상 늦어질 경우 안내 메시지 변경
       const timer = setTimeout(() => {
-        setLoadingText('서버 응답을 기다리는 중입니다. (최대 1분 소요)');
+        setLoadingMessage('서버 응답을 기다리는 중입니다. (최대 1분 소요)');
       }, 8000); // 8초
 
       try {
@@ -36,17 +41,19 @@ function AuthPage() {
         } else if (error.code === 'ECONNABORTED') {
           alert('로그인에 실패했습니다. (서버 응답 시간 초과)');
         } else {
+          // (예: loginWithGoogle API failed)
           alert(`로그인에 실패했습니다. (${error.message})`);
         }
         
-        setLoadingText(null); // [수정] 로딩 상태 해제 (버튼으로 복구)
+        setIsLoading(false); // <--- 버튼 다시 활성화
+        setLoadingMessage('로그인 중...'); // <--- 메시지 리셋
       }
     },
     // Google 로그인 실패 시
     onError: (error) => {
       console.error('Google 로그인 실패:', error);
       alert('Google 로그인에 실패했습니다. 다시 시도해주세요.');
-      setLoadingText(null); // [수정] 로딩 상태 해제
+      setIsLoading(false); // <--- 버튼 다시 활성화
     },
   });
 
@@ -61,13 +68,11 @@ function AuthPage() {
         
         <button 
           className="google-login-button" 
-          // [수정] loadingText가 null일 때만 클릭 가능
-          onClick={() => !loadingText && handleGoogleLogin()} 
-          // [수정] loadingText가 존재하면 disabled
-          disabled={!!loadingText} 
+          onClick={() => !isLoading && handleGoogleLogin()} 
+          disabled={isLoading} 
         >
-          {/* [수정] loadingText가 있으면 텍스트를, 없으면 Google 아이콘 표시 */}
-          {loadingText ? loadingText : ( 
+          {/* [수정] UI 구조는 isLoading으로, 내용은 loadingMessage로 제어 */}
+          {isLoading ? loadingMessage : ( 
             <>
               <svg className="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
