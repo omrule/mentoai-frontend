@@ -3,7 +3,6 @@ import React, { useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './Page.css'; 
-// /auth/me API를 직접 호출하기 위해 import
 import { checkCurrentUser } from '../api/api'; 
 
 function OAuthCallback() {
@@ -11,37 +10,35 @@ function OAuthCallback() {
   const navigate = useNavigate();
   const { login } = useAuth(); // AuthContext에서 useCallback으로 고정된 함수
   
-  const hasRunRef = useRef(false); // 무한 실행 방지
+  const hasRunRef = useRef(false); // 로직이 1번만 실행되도록 보장
 
   useEffect(() => {
-    // async 함수로 변경
+    // [!!!] 1. URL에서 accessToken을 먼저 가져옵니다.
+    const accessToken = searchParams.get('accessToken');
+
+    // [!!!] 2. 아직 searchParams가 파싱되지 않았거나(accessToken is null),
+    //          이미 로직이 실행되었다면(hasRunRef is true), 즉시 중단합니다.
+    if (!accessToken || hasRunRef.current) {
+      return; 
+    }
+    
+    // [!!!] 3. 로직을 "지금" 실행합니다. (플래그를 true로 설정)
+    hasRunRef.current = true;
+    const refreshToken = searchParams.get('refreshToken');
+
+    // async 즉시 실행 함수로 로직을 감쌉니다.
     const handleLoginCallback = async () => {
-      if (hasRunRef.current) return;
-      hasRunRef.current = true;
-
-      const accessToken = searchParams.get('accessToken');
-      const refreshToken = searchParams.get('refreshToken');
-
-      // 1. URL에 accessToken이 있는지 확인
-      if (!accessToken) {
-        alert('로그인에 실패했습니다. (URL에서 accessToken을 찾을 수 없음)');
-        navigate('/login', { replace: true });
-        return;
-      }
-
-      // 2. 토큰 객체 구성 (user는 아직 모름)
+      // 4. 토큰 객체 구성
       const tokenData = {
         accessToken: accessToken,
         refreshToken: refreshToken
       };
 
-      // 3. apiClient가 토큰을 인식하도록
-      // 우선 user: null 상태로 sessionStorage에 저장합니다.
-      // (apiClient.js의 인터셉터가 이 'tokens'를 읽어갈 것입니다)
+      // 5. apiClient가 토큰을 인식하도록 sessionStorage에 임시 저장
       sessionStorage.setItem('mentoUser', JSON.stringify({ user: null, tokens: tokenData }));
 
       try {
-        // 4. 저장된 토큰으로 /auth/me API를 호출하여 user 정보를 가져옵니다.
+        // 6. 저장된 토큰으로 /auth/me API를 호출하여 user 정보를 가져옵니다.
         const response = await checkCurrentUser(); 
 
         if (!response.success) {
@@ -50,14 +47,13 @@ function OAuthCallback() {
         
         const user = response.data; // { userId, name, profileComplete, ... }
 
-        // 5. 완전한 authData 객체를 만들어 login() 호출
+        // 7. 완전한 authData 객체를 만들어 login() 호출
         const authData = {
           user: user,
           tokens: tokenData
         };
         
-        // (이제 App.js의 PublicRoute가 알아서 리디렉션함)
-        login(authData);
+        login(authData); // (이제 App.js의 PublicRoute가 알아서 리디렉션함)
       
       } catch (error) {
         console.error("OAuthCallback 처리 중 에러:", error);
@@ -69,7 +65,7 @@ function OAuthCallback() {
 
     handleLoginCallback();
     
-  }, [searchParams, navigate, login]); 
+  }, [searchParams, navigate, login]); // 종속성은 그대로 둠
 
   // 로딩 스피너 (PublicRoute가 리디렉션할 때까지 잠시 표시됨)
   return (
@@ -80,7 +76,7 @@ function OAuthCallback() {
           <div className="spinner"></div>
           <p>로그인 정보를 처리 중입니다. 잠시만 기다려주세요...</p>
         </div>
-        </div>
+      </div>
     </div>
   );
 }
