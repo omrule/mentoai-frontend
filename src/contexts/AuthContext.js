@@ -1,5 +1,5 @@
 // src/contexts/AuthContext.js
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react'; // [!!!] useCallback 임포트
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react'; // useCallback 임포트
 import { 
   checkCurrentUser, 
   saveUserProfile, 
@@ -13,14 +13,13 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // [!!!] B안(서버 흐름)을 위한 'login' 함수
   // [!!!] useCallback으로 감싸서 함수가 재생성되는 것을 방지 (무한 루프 해결)
   const login = useCallback((authData) => {
     try {
       sessionStorage.setItem('mentoUser', JSON.stringify(authData));
       setUser(authData);
     } catch (error) {
-      console.error("AuthContext login (B안) 실패:", error);
+      console.error("AuthContext login 실패:", error);
       sessionStorage.removeItem('mentoUser');
       throw error;
     }
@@ -57,7 +56,7 @@ export const AuthProvider = ({ children }) => {
     };
     
     verifyUser();
-  }, []); // (useEffect의 종속성 배열은 비어있는 것이 맞습니다)
+  }, []); 
   
   // [!!!] completeProfile도 useCallback으로 감싸줍니다.
   const completeProfile = useCallback(async (profileData) => {
@@ -97,7 +96,6 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    // [!!!] value에 useCallback으로 감싼 함수들을 전달
     <AuthContext.Provider value={{ user, login, logout, completeProfile, profileComplete: user?.user?.profileComplete }}>
       {children}
     </AuthContext.Provider>
