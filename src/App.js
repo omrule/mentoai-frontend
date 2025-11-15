@@ -53,7 +53,7 @@ function App() {
   }
 
   const showNavbar = user && user.user.profileComplete && 
-                    Docation.pathname !== '/login' && 
+                    Location.pathname !== '/login' && 
                      location.pathname !== '/profile-setup';
   
   const appClassName = showNavbar ? "App" : "App-unauthed";
