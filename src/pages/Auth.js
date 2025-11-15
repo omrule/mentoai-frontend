@@ -1,35 +1,96 @@
 // src/pages/Auth.js
 import React, { useState } from 'react';
-import { useGoogleLogin } from '@react-oauth/google'; 
-import { useAuth } from '../contexts/AuthContext'; 
-import './Page.css';
+import { useNavigate } from 'react-router-dom';
+import { useGoogleLogin } from '@react-oauth/google';
+import axios from 'axios'; // Context/apiClient 대신 axios를 직접 사용
+import './Page.css'; // (기존 CSS 재활용)
+
+// 백엔드 서버 주소
+const API_BASE_URL = 'https://mentoai.onrender.com';
 
 function AuthPage() {
-  const auth = useAuth(); 
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('로그인 중...');
 
+  /**
+   * [A안] 백엔드 POST /users API를 직접 호출하는 함수
+   */
+  const loginToBackend = async (googleUserData) => {
+    try {
+      const payload = {
+        authProvider: "GOOGLE",
+        providerUserId: googleUserData.providerUserId,
+        email: googleUserData.email,
+        name: googleUserData.name,
+        nickname: googleUserData.name, // nickname 필드 포함
+        profileImageUrl: googleUserData.profileImageUrl
+      };
+
+      // axios 인스턴스(apiClient) 대신 axios를 직접 호출
+      const response = await axios.post(`${API_BASE_URL}/users`, payload, {
+        timeout: 60000 // Render 서버 콜드 스타트 60초 대기
+      });
+
+      // 성공 시 { user, tokens } 객체를 반환
+      return { success: true, data: response.data };
+
+    } catch (error) {
+      console.error("POST /users 로그인 실패:", error);
+      const message = error.response?.data?.message || error.message;
+      // AuthContext가 없으므로 에러를 직접 throw
+      throw new Error(message);
+    }
+  };
+
+  /**
+   * Google 로그인 버튼 클릭 시 실행되는 메인 함수
+   */
   const handleGoogleLogin = useGoogleLogin({
+    // 1. Google 로그인 성공
     onSuccess: async (googleTokenResponse) => {
       setIsLoading(true);
       setLoadingMessage('Google 인증 완료. MentoAI 서버에 로그인합니다...');
 
       const timer = setTimeout(() => {
         setLoadingMessage('서버 응답을 기다리는 중입니다. (최대 1분 소요)');
-      }, 8000); // 8초
+      }, 8000);
 
       try {
-        // AuthContext의 login 함수 (A안) 호출
-        await auth.login(googleTokenResponse);
-        clearTimeout(timer); 
-        // (성공 시 App.js가 자동으로 리디렉션함)
+        // 2. Google userinfo API 호출
+        const googleUser = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${googleTokenResponse.access_token}` }
+        });
+        
+        const { sub, email, name, picture } = googleUser.data;
 
+        // 3. 백엔드 POST /users API 호출
+        const response = await loginToBackend({
+          providerUserId: sub,
+          email: email,
+          name: name,
+          profileImageUrl: picture
+        });
+        
+        clearTimeout(timer);
+
+        // 4. 로그인 성공: { user, tokens }를 sessionStorage에 저장
+        sessionStorage.setItem('mentoUser', JSON.stringify(response.data));
+
+        // 5. 프로필 작성 여부에 따라 페이지 이동
+        const profileComplete = response.data.user.profileComplete;
+        if (profileComplete) {
+          navigate('/recommend', { replace: true });
+        } else {
+          navigate('/profile-setup', { replace: true });
+        }
+        
       } catch (error) {
+        // 6. 모든 과정 중 실패 시
         clearTimeout(timer);
         console.error("로그인 처리 중 에러 발생:", error);
         
-        // 백엔드가 보낸 에러 메시지(예: 닉네임 중복) 또는 기본 메시지
-        const alertMessage = error.message || "알 수 없는 오류가 발생했습니다.";
+        const alertMessage = error.message || "알 수 없는 오류";
         
         if (error.code === 'ERR_NETWORK' || error.message.includes('CORS')) {
           alert('로그인에 실패했습니다. (네트워크 오류 또는 CORS 설정 확인)');
@@ -43,13 +104,14 @@ function AuthPage() {
         setLoadingMessage('로그인 중...');
       }
     },
+    // Google 로그인 팝업창 닫기 등 실패 시
     onError: (error) => {
       console.error('Google 로그인 실패:', error);
-      alert('Google 로그인에 실패했습니다. 다시 시도해주세요.');
       setIsLoading(false);
     },
   });
 
+  // (이하 JSX는 기존과 동일)
   return (
     <div className="auth-container">
       <div className="auth-card">
