@@ -1,61 +1,25 @@
 // src/pages/Auth.js
 import React, { useState } from 'react';
-import { useGoogleLogin } from '@react-oauth/google'; 
-import { useAuth } from '../contexts/AuthContext'; 
+// [!!!] useGoogleLogin은 B안(서버 흐름)에서 더 이상 사용하지 않습니다.
+// import { useGoogleLogin } from '@react-oauth/google';
+// import { useAuth } from '../contexts/AuthContext'; // B안에서는 login()을 직접 호출하지 않음
 import './Page.css';
 
+// [!!!] 백엔드 팀원에게 이 주소가 맞는지 꼭 확인하세요.
+// 예: 'https://mentoai.onrender.com/api/v1/auth/google'
+// 예: 'https://mentoai.onrender.com/oauth2/authorization/google'
+// 팀원이 말한 '/auth/google/start'를 기반으로 URL을 구성합니다.
+const BACKEND_GOOGLE_LOGIN_URL = 'https://mentoai.onrender.com/auth/google/start'; // <--- 팀원의 확인 필요
+
 function AuthPage() {
-  const auth = useAuth(); 
-  
-  // [수정] 2개의 state로 분리하여 UI 깨짐 방지
-  // 1. isLoading: UI 구조(버튼 활성/비활성)를 제어 (Original 방식)
-  const [isLoading, setIsLoading] = useState(false);
-  // 2. loadingMessage: 로딩 중일 때 표시할 텍스트
-  const [loadingMessage, setLoadingMessage] = useState('로그인 중...');
+  const [isLoading, setIsLoading] = useState(false); 
 
-  const handleGoogleLogin = useGoogleLogin({
-    // Google 로그인 성공 시 실행되는 함수
-    onSuccess: async (tokenResponse) => {
-      setIsLoading(true); // <--- 버튼 비활성화
-      setLoadingMessage('Google 인증 완료. MentoAI 서버에 로그인합니다...');
-
-      // [신규] 서버 응답이 8초 이상 늦어질 경우 안내 메시지 변경
-      const timer = setTimeout(() => {
-        setLoadingMessage('서버 응답을 기다리는 중입니다. (최대 1분 소요)');
-      }, 8000); // 8초
-
-      try {
-        await auth.login(tokenResponse);
-        clearTimeout(timer); // 성공 시 타이머 제거
-        
-        // (성공 시 AuthContext가 user 상태를 변경하고,
-        //  App.js의 PublicRoute가 자동으로 리디렉션함)
-
-      } catch (error) {
-        clearTimeout(timer); // 실패 시 타이머 제거
-        console.error("로그인 처리 중 에러 발생:", error);
-        
-        // [수정] 사용자에게 에러 메시지 표시
-        if (error.code === 'ERR_NETWORK') {
-          alert('로그인에 실패했습니다. (네트워크 오류 또는 CORS 설정 확인)');
-        } else if (error.code === 'ECONNABORTED') {
-          alert('로그인에 실패했습니다. (서버 응답 시간 초과)');
-        } else {
-          // (예: loginWithGoogle API failed)
-          alert(`로그인에 실패했습니다. (${error.message})`);
-        }
-        
-        setIsLoading(false); // <--- 버튼 다시 활성화
-        setLoadingMessage('로그인 중...'); // <--- 메시지 리셋
-      }
-    },
-    // Google 로그인 실패 시
-    onError: (error) => {
-      console.error('Google 로그인 실패:', error);
-      alert('Google 로그인에 실패했습니다. 다시 시도해주세요.');
-      setIsLoading(false); // <--- 버튼 다시 활성화
-    },
-  });
+  const handleBackendLogin = () => {
+    setIsLoading(true);
+    // 백엔드 로그인 URL로 브라우저를 리디렉션시킵니다.
+    // 백엔드가 Google 로그인 처리 후, /oauth/callback으로 다시 리디렉션시킵니다.
+    window.location.href = BACKEND_GOOGLE_LOGIN_URL;
+  };
 
   return (
     <div className="auth-container">
@@ -68,11 +32,10 @@ function AuthPage() {
         
         <button 
           className="google-login-button" 
-          onClick={() => !isLoading && handleGoogleLogin()} 
+          onClick={() => !isLoading && handleBackendLogin()} 
           disabled={isLoading} 
         >
-          {/* [수정] UI 구조는 isLoading으로, 내용은 loadingMessage로 제어 */}
-          {isLoading ? loadingMessage : ( 
+          {isLoading ? '로그인 페이지로 이동 중...' : ( 
             <>
               <svg className="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>

@@ -1,12 +1,13 @@
 // src/contexts/AuthContext.js
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios'; // Google userinfo API 호출용
+// [!!!] axios와 loginWithGoogle은 B안의 login()에서 더 이상 필요 없습니다.
+// import axios from 'axios'; 
 import { 
-  loginWithGoogle, 
+  // loginWithGoogle, // (삭제됨)
   checkCurrentUser, 
-  saveUserProfile, // (completeProfile용)
+  saveUserProfile, 
   logoutUser, 
-  getUserProfile // (verifyUser에서 제거됨)
+  getUserProfile 
 } from '../api/api'; 
 
 const AuthContext = createContext(null);
@@ -15,42 +16,26 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // [수정] login 함수: MentoAI API 호출을 1번(loginWithGoogle)만 하도록 단순화
-  const login = async (googleTokenResponse) => {
+  // [!!!] B안(서버 흐름)을 위한 새 'login' 함수
+  // OAuthCallback.js가 이 함수를 호출합니다.
+  const login = (authData) => {
+    // authData = { user: { userId, name, profileComplete, ... }, tokens: { accessToken, refreshToken } }
+    // (OAuthCallback.js에서 만든 객체 형식에 맞춰야 합니다)
     try {
-      // 1. Google access_token으로 Google userinfo API 호출
-      const googleUser = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
-        headers: { Authorization: `Bearer ${googleTokenResponse.access_token}` }
-      });
+      // 백엔드가 리디렉션으로 전달해준 토큰과 유저 정보를
+      // 그대로 sessionStorage와 state에 저장합니다.
+      sessionStorage.setItem('mentoUser', JSON.stringify(authData));
+      setUser(authData);
 
-      const { sub, email, name, picture } = googleUser.data;
-
-      // 2. MentoAI 백엔드 (POST /users) API 호출
-      const response = await loginWithGoogle({ 
-        providerUserId: sub, 
-        email: email,
-        name: name,
-        profileImageUrl: picture
-      }); 
-      
-      if (response.success) {
-        // 3. API가 반환한 AuthResponse (user + tokens)를 저장
-        // [수정] 백엔드가 준 response.data를 그대로 저장하고 상태로 설정
-        // (response.data.user 객체 안에 profileComplete 플래그가 포함되어 있다고 가정)
-        sessionStorage.setItem('mentoUser', JSON.stringify(response.data));
-        setUser(response.data);
-
-      } else {
-        throw new Error("loginWithGoogle API failed");
-      }
     } catch (error) {
-      console.error("AuthContext login 실패:", error);
+      console.error("AuthContext login (B안) 실패:", error);
       sessionStorage.removeItem('mentoUser');
-      throw error; 
+      throw error;
     }
   };
 
-  // [수정] verifyUser 함수: MentoAI API 호출을 1번(checkCurrentUser)만 하도록 단순화
+  // [!!!] 이 함수는 A안, B안 공통으로 중요합니다. (수정 불필요, 이전 수정안 유지)
+  // 앱 로드 시, sessionStorage에 저장된 토큰으로 /auth/me 호출
   useEffect(() => {
     const verifyUser = async () => {
       const storedUserJSON = sessionStorage.getItem('mentoUser');
@@ -64,8 +49,6 @@ export const AuthProvider = ({ children }) => {
             const basicUser = response.data; // (user 객체에 profileComplete가 포함되어 있음)
             const storedUser = JSON.parse(storedUserJSON); // 기존 토큰 정보
 
-            // [수정] 불필요한 getUserProfile() 호출 제거
-            
             const finalUserData = {
               user: basicUser, // /auth/me에서 받은 최신 user 객체
               tokens: storedUser.tokens // 기존 토큰
@@ -88,14 +71,15 @@ export const AuthProvider = ({ children }) => {
     verifyUser();
   }, []);
   
-  // [수정] completeProfile: API 호출 (saveUserProfile)
+  // (이하 completeProfile, logout 함수는 기존 코드와 동일)
+
   const completeProfile = async (profileData) => {
     try {
       const response = await saveUserProfile(profileData); 
       if (response.success) {
         const updatedUser = {
           ...user,
-          user: { // user 객체 내부를 업데이트
+          user: { 
             ...user.user,
             profileComplete: true 
           }
@@ -109,7 +93,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // 로그아웃 함수
   const logout = async () => {
     try {
       await logoutUser(); 
