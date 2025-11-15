@@ -31,7 +31,8 @@ export const loginWithGoogle = async (googleUserData) => {
       providerUserId: googleUserData.providerUserId, // Google의 'sub' ID
       email: googleUserData.email,
       name: googleUserData.name,
-      // nickname: googleUserData.name, // (API 명세에 nickname이 있으나 Google은 안 줌)
+      // [!!!] 수정된 부분: API 명세에 따라 'nickname' 필드 추가
+      nickname: googleUserData.name, 
       profileImageUrl: googleUserData.profileImageUrl // Google 프로필 사진
     };
 
