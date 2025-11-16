@@ -27,22 +27,16 @@
   margin-bottom: 40px;
 }
 
-/* --- [삭제] AuthPage 관련 스타일 --- */
-
-
-/* --- [!!!] [수정] ProfileSetup (프로필 설정) --- */
 .profile-setup-container {
   display: flex;
   justify-content: center;
   align-items: flex-start; /* [!!!] [수정] flex-start (상단 정렬) */
   width: 100%;
   min-height: 100vh;
-  padding: 20px !important; /* [!!!] [수정] 상단 여백 추가 */
+  padding: 20px; /* [!!!] [수정] 상단 여백 추가 */
   box-sizing: border-box;
   background-color: #ffffff; 
 }
-
-/* --- [삭제] .auth-card 관련 스타일 --- */
 
 .profile-card {
   width: 100%;
@@ -58,9 +52,6 @@
   max-width: 100%; /* MyPage에서는 1200px이 아닌 100% 사용 */
 }
 
-/* --- [삭제] .auth-logo, .auth-subtitle, .google-login-button 관련 스타일 --- */
-
-
 /* --- ProfileSetup & MyPage Form --- */
 .profile-card-title {
   text-align: center;
@@ -74,11 +65,11 @@
   text-align: center;
 }
 .form-section {
-  display: block !important; /* [!!!] [수정] 거대 공백 오류 방지를 위해 block으로 강제 */
+  display: block; /* [!!!] [수정] 거대 공백 오류 방지를 위해 block으로 강제 */
   width: 100%;
-  margin-bottom: 10px !important; /* [!!!] [수정] 20px -> 15px (공백 줄임) */
+  margin-bottom: 10px; /* [!!!] [수정] 20px -> 15px (공백 줄임) */
   border-bottom: 1px solid #eee;
-  padding-bottom: 10px !important; /* [!!!] [수정] 20px -> 15px (공백 줄임) */
+  padding-bottom: 10px; /* [!!!] [수정] 20px -> 15px (공백 줄임) */
 }
 .form-section:last-of-type {
   border-bottom: none;
@@ -103,9 +94,9 @@
   gap: 20px;
 }
 .form-grid.two-cols {
-  display: grid !important;
-  gap: 15px 20px !important; 
-  grid-template-columns: repeat(2, 1fr) !important; 
+  display: grid;
+  gap: 15px 20px; 
+  grid-template-columns: repeat(2, 1fr); 
   max-width: 900px; 
   align-items: end;
 }
@@ -237,8 +228,6 @@
 .submit-button:disabled { background-color: #6c757d; }
 .mypage-card { max-width: 100%; }
 
-/* --- [삭제] PromptInput (spinner, results-container 등) 관련 스타일 --- */
-
 
 /* 토스트 팝업 */
 .toast-message {
@@ -261,9 +250,6 @@
   100% { opacity: 0; bottom: 0; }
 }
 
-/* --- PortfolioCalendar (삭제된 페이지) --- */
-/* ( ... 생략 ... ) */
-
 /* --- ActivityRecommender --- */
 .recommender-layout { display: flex; gap: 30px; align-items: flex-start; }
 .task-list-card {
@@ -285,12 +271,6 @@
 .activity-links { display: flex; gap: 10px; flex-wrap: wrap; }
 .activity-links button { padding: 10px 18px; border: none; background-color: #f1f3f5; color: #333; border-radius: 5px; cursor: pointer; font-size: 14px; }
 .activity-links button:hover { background-color: #dee2e6; }
-
-/* --- [삭제] ScheduleCalendar (수정됨) 관련 스타일 --- */
-/* ( .calendar-container, .modal-overlay 등 모두 삭제 ) */
-
-
-/* --- [삭제] 모달 (Modal) 관련 스타일 --- */
 
 
 /* 2칸을 차지하는 CSS 클래스 */
