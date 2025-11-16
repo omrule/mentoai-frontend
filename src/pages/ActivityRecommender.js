@@ -164,7 +164,7 @@ function ActivityRecommender() {
             
             <div className="activity-section" dangerouslySetInnerHTML={{ __html: selectedActivity.content }} />
             
-            <div className="activity-section recommendation" dangerouslySetInnerHTML={{ __html: selectedD.recommendation }} />
+            <div className="activity-section recommendation" dangerouslySetInnerHTML={{ __html: selectedActivity.recommendation }} />
             
             <div className="activity-links">
               {selectedActivity.links.map(link => (
