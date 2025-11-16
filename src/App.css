@@ -1,4 +1,8 @@
 /* src/App.css */
+body, html, #root {
+  margin: 0;
+  height: 100%;
+}
 
 body {
   margin: 0;
@@ -17,13 +21,13 @@ body {
 .App {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100%;
 }
 
 /* App 전체를 덮는 un-authed 상태의 스타일 추가 */
 .App-unauthed {
   width: 100%;
-  min-height: 100vh;
+  height: 100%;
   background-color: #ffffff; 
 }
 
