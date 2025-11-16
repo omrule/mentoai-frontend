@@ -1,7 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // [수정] useState, useEffect 임포트
 import './Page.css';
+import apiClient from '../api/apiClient'; // [신규] apiClient 임포트
 
-// [수정] 70점대 유저에게 80~90점대 목표를 제안하는 가상 추천 데이터
+// [신규] sessionStorage에서 userId를 가져오는 헬퍼 (MyPage.js와 동일)
+const getUserIdFromStorage = () => {
+  try {
+    const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
+    return storedUser ? storedUser.user.userId : null;
+  } catch (e) {
+    return null;
+  }
+};
+
+// [기존] 70점대 유저에게 80~90점대 목표를 제안하는 가상 추천 데이터
 const mockRecommendations = [
   {
     id: 'naver_ai',
@@ -67,8 +78,44 @@ const mockRecommendations = [
 
 function ActivityRecommender() {
   const [activeTab, setActiveTab] = useState(mockRecommendations[0].id);
+  // [신규] 사용자 점수를 저장할 state (초기값 null)
+  const [userScore, setUserScore] = useState(null);
 
   const selectedActivity = mockRecommendations.find(act => act.id === activeTab);
+
+  // [신규] 페이지 로드 시 백엔드에서 사용자 점수를 가져오는 로직
+  useEffect(() => {
+    const fetchUserScore = async () => {
+      try {
+        const userId = getUserIdFromStorage();
+        if (!userId) {
+          throw new Error("사용자 ID를 찾을 수 없습니다.");
+        }
+        
+        // GET /users/{userId} API 호출
+        const response = await apiClient.get(`/users/${userId}`);
+        
+        // (가정) 백엔드 응답이 { ..., score: 70 } 형태라고 가정합니다.
+        if (response.data && response.data.score !== undefined) {
+          setUserScore(response.data.score);
+        } else {
+          // (혹시 /profile API에 점수가 있다면 이쪽을 사용)
+          // const profileResponse = await apiClient.get(`/users/${userId}/profile`);
+          // setUserScore(profileResponse.data.score);
+          
+          // 임시: API에 score 필드가 없을 경우
+          console.warn("API 응답에 'score' 필드가 없습니다.");
+          setUserScore(0); // 임시로 0점 표시
+        }
+        
+      } catch (error) {
+        console.error("사용자 점수 로딩 실패:", error);
+        setUserScore(0); // 에러 시 0점
+      }
+    };
+
+    fetchUserScore();
+  }, []); // 페이지가 처음 로드될 때 1회 실행
 
   return (
     <div className="page-container">
@@ -81,14 +128,19 @@ function ActivityRecommender() {
         backgroundColor: '#f8f9fa',
         border: '1px solid #dee2e6',
         borderRadius: '8px',
-        marginBottom: '40px',
+        marginBottom: '20px', // [수정] UI 스크롤 문제 해결 (40px -> 20px)
         textAlign: 'center'
       }}>
-        {/* [수정] 멘트 수정 */}
+        {/* [멘트 수정] */}
         <h3 style={{ margin: '0', color: '#343a40', fontSize: '1.25rem' }}>
-          현재 점수는 <span style={{ color: '#007bff', fontSize: '1.5em', fontWeight: 'bold' }}>70점</span> 입니다.
+          {/* [수정] userScore state와 연동, 로딩 중일 땐 '...' 표시 */}
+          현재 점수는 
+          <span style={{ color: '#007bff', fontSize: '1.5em', fontWeight: 'bold' }}>
+            {userScore === null ? '...' : `${userScore}점`}
+          </span> 
+          입니다.
         </h3>
-        {/* [수정] 멘트 수정 */}
+        {/* [멘트 수정] */}
         <p style={{ margin: '10px 0 0', color: '#495057', fontSize: '1rem' }}>
           아래 '추천 항목'을 확인하고 목표 달성을 시작해 보세요!
         </p>
