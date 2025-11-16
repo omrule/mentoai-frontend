@@ -36,8 +36,7 @@
   min-height: 100vh;
   padding: 40px 20px;
   box-sizing: border-box;
-  /* [!!!] [수정] 배경 흰색으로 통일 */
-  background-color: #ffffff;
+  background-color: #ffffff; /* [!!!] [수정] 배경 흰색으로 통일 */
 }
 .auth-card {
   width: 100%;
@@ -76,7 +75,7 @@
   color: #555; 
   margin-bottom: 40px; 
   line-height: 1.6;
-  text-align: center; /* 설명글 중앙 정렬 */
+  text-align: center; /* [!!!] 설명글 중앙 정렬 */
 }
 
 .google-login-button {
@@ -96,7 +95,7 @@
   gap: 12px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   box-sizing: border-box; 
-  white-space: nowrap; /* 버튼 텍스트 줄바꿈 방지 */
+  white-space: nowrap; /* [!!!] 버튼 텍스트 줄바꿈 방지 */
 }
 .google-login-button:hover { background-color: #f8f9fa; border-color: #ced4da; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
 .google-icon { 
@@ -119,7 +118,6 @@
   text-align: center;
 }
 .form-section {
-  /* [!!!] [수정] display: block; 제거 (공백 문제의 원인이 아니었음) */
   width: 100%;
   margin-bottom: 20px; 
   border-bottom: 1px solid #eee;
@@ -129,9 +127,14 @@
   border-bottom: none;
   padding-bottom: 10px;
 }
-.form-section h3 {
+/* [!!!] [수정] h3가 grid 안에 있을 때를 대비해 margin-bottom 제거 */
+.form-grid h3 {
   font-size: 18px;
   color: #333;
+  margin: 0; /* [!!!] 불필요한 마진 제거 */
+}
+/* [!!!] [추가] h3가 grid 바깥에 있을 때(증빙자료 등)의 스타일 */
+.form-section > h3 {
   margin-bottom: 15px;
 }
 
@@ -141,9 +144,10 @@
 }
 .form-grid.two-cols {
   display: grid;
-  gap: 20px;
+  gap: 15px 20px; /* [수정] 간격 조정 */
   grid-template-columns: repeat(2, 1fr); /* 2x2 그리드 레이아웃 */
   max-width: 900px; /* 폼이 너무 넓게 퍼지는 것을 방지 */
+  align-items: end;
 }
 /* 2x2 그리드 모바일 반응형 */
 @media (max-width: 768px) {
@@ -153,7 +157,7 @@
 }
 
 .form-group {
-  margin-bottom: 10px; 
+  margin-bottom: 0; /* [!!!] [수정] 그리드 gap으로 간격을 관리하므로 margin 제거 */
   text-align: left;
 }
 .form-group label {
@@ -170,27 +174,15 @@
   border-radius: 8px;
   font-size: 15px;
   box-sizing: border-box;
-  /* [!!!] [수정] CustomSelect(37px)와 높이를 맞춥니다. */
-  height: 37px;
+  height: 37px; /* [!!!] [수정] CustomSelect(37px)와 높이를 맞춥니다. */
 }
 /* [추가] textarea는 높이가 37px이면 안되므로, auto로 복원 */
 .form-group textarea {
   height: auto;
 }
 
-.input-group input {
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  padding: 10px; 
-  font-size: 15px;
-  box-sizing: border-box;
-  background-color: white;
-  height: 37px;
-}
-
-.input-group select {
-  /* (사용 안 함) */
-}
+/* [삭제] .input-group input ( .form-group input으로 통합됨 ) */
+/* [삭제] .input-group select ( .form-group select로 통합됨 ) */
 
 /* 동적 입력 UI (Skill, Experience 등) */
 .input-group {
@@ -199,34 +191,23 @@
   margin-bottom: 10px;
   align-items: center;
 }
-.input-group.experience-group {
-  /* [삭제] 이전 그리드 CSS (새로운 .form-grid.experience-grid로 대체됨) */
-  display: grid;
-  grid-template-columns: 1fr 1.5fr 1fr 1.5fr 2fr auto;
-  gap: 10px;
-  align-items: center;
-}
+/* [삭제] .input-group.experience-group ( .form-grid.experience-grid로 대체됨 ) */
 
-.input-group.skill-group {
-  display: grid;
+/* [!!!] [수정] 기술 스택 섹션 그리드 레이아웃 */
+.form-grid.skill-grid {
   grid-template-columns: 1fr auto auto;
-  gap: 10px;
-  align-items: center;
-  max-width: 800px; /* two-cols와 너비 맞춤 */
+  gap: 15px 20px;
+  align-items: end;
+  max-width: 900px; 
 }
-.input-group.skill-group .custom-select-wrapper {
-  width: 200px;
-}
+/* [삭제] .input-group.skill-group .custom-select-wrapper (불필요) */
 
 @media (max-width: 768px) {
-  .input-group.experience-group,
-  .input-group.skill-group {
-    display: flex;
-    flex-direction: column; 
-    align-items: stretch;
-  }
-  .input-group.skill-group .custom-select-wrapper {
-    width: 100%; 
+  /* [삭제] .input-group.experience-group (불필요) */
+  
+  /* [!!!] [수정] 기술 스택 모바일 레이아웃 */
+  .form-grid.skill-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -250,7 +231,7 @@
 .added-list {
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin-top: 15px; /* [!!!] [추가] 폼과의 간격 */
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -785,12 +766,11 @@
   fill: #adb5bd; 
 }
 
-/* --- [신규] ProfileSetup '주요 경험' 그리드 UI --- */
+/* --- [!!!] [수정] ProfileSetup '주요 경험' 그리드 UI --- */
 .form-grid.experience-grid {
-  /* [수정] 3개 컬럼 -> 2개 컬럼 */
   grid-template-columns: 1fr 1.5fr; 
   gap: 15px 20px;
-  align-items: end; /* 요소들을 하단에 정렬 */
+  align-items: end;
 }
 
 /* 2칸을 차지하는 CSS 클래스 */
@@ -798,14 +778,29 @@
   grid-column: span 2 / span 2;
 }
 
+/* [!!!] [추가] 3칸을 차지하는 CSS 클래스 (기술 스택용) */
+.grid-col-span-3 {
+  grid-column: span 3 / span 3;
+}
+
 /* 그리드 내의 버튼을 오른쪽 하단에 정렬 */
 .grid-align-end {
   align-self: end;
-  width: auto; /* 버튼이 컬럼을 꽉 채우지 않도록 auto로 변경 */
-  height: 37px; /* input과 높이 맞춤 */
-  grid-column: 2 / 3; /* [수정] 2번째 컬럼으로 이동 */
-  justify-self: end; /* [신규] 컬럼 내에서 오른쪽 정렬 */
+  width: auto; 
+  height: 37px;
+  justify-self: end;
 }
+
+/* [!!!] [수정] 기술 스택 그리드 버튼 정렬 */
+.form-grid.skill-grid .grid-align-end {
+  grid-column: 3 / 4;
+}
+
+/* [!!!] [수정] 주요 경험 그리드 버튼 정렬 */
+.form-grid.experience-grid .grid-align-end {
+  grid-column: 2 / 3;
+}
+
 
 /* '주요 경험' 그리드 반응형 (모바일) */
 @media (max-width: 768px) {
@@ -819,5 +814,10 @@
     grid-column: span 1 / span 1; /* 1열로 변경 */
     width: 100%; /* 모바일에선 꽉 채움 */
     height: 42px; 
+  }
+
+  /* [!!!] [추가] 기술 스택 모바일 버튼 정렬 */
+  .form-grid.skill-grid .grid-align-end {
+    grid-column: span 1 / span 1;
   }
 }

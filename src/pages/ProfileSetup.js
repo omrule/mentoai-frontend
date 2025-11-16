@@ -77,7 +77,6 @@ function ProfileSetup() {
         if (storedUser.user) {
           storedUser.user.profileComplete = true;
         } else {
-          // /auth/me 응답에 user 객체가 없는 경우를 대비
           storedUser.user = { profileComplete: true }; 
         }
         sessionStorage.setItem('mentoUser', JSON.stringify(storedUser));
@@ -130,15 +129,22 @@ function ProfileSetup() {
 
         {/* --- 2. 기술 스택 섹션 --- */}
         <div className="form-section">
-          <h3>기술 스택</h3>
-          <div className="input-group skill-group">
-            <input type="text" placeholder="기술 이름 (예: React)" value={currentSkill.name} onChange={(e) => setCurrentSkill({ ...currentSkill, name: e.target.value })} />
-            <CustomSelect
-              options={skillOptions}
-              value={currentSkill.level}
-              onChange={(newValue) => setCurrentSkill({ ...currentSkill, level: newValue })}
-            />
-            <button type="button" className="add-item-btn" onClick={handleAddSkill}>추가</button>
+          {/* [!!!] [수정] 기술 스택도 그리드 레이아웃으로 통일합니다. */}
+          <div className="form-grid skill-grid">
+            <h3 className="grid-col-span-3">기술 스택</h3>
+            <div className="form-group">
+              <label>기술 이름</label>
+              <input type="text" placeholder="예: React" value={currentSkill.name} onChange={(e) => setCurrentSkill({ ...currentSkill, name: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>수준</label>
+              <CustomSelect
+                options={skillOptions}
+                value={currentSkill.level}
+                onChange={(newValue) => setCurrentSkill({ ...currentSkill, level: newValue })}
+              />
+            </div>
+            <button type="button" className="add-item-btn grid-align-end" onClick={handleAddSkill}>추가</button>
           </div>
           <ul className="added-list">
             {skills.map((skill, index) => (
@@ -152,33 +158,33 @@ function ProfileSetup() {
 
         {/* --- 3. 주요 경험 섹션 (UI 다듬기) --- */}
         <div className="form-section">
-          <h3>주요 경험</h3>
           <div className="form-grid experience-grid">
-          <div className="form-group">
-            <label>유형</label>
-            <CustomSelect
-              options={experienceOptions}
-              value={currentExperience.type}
-              onChange={(newValue) => setCurrentExperience({ ...currentExperience, type: newValue })}
-            />
-          </div>
-          <div className="form-group">
-            <label>역할</label>
-            <input type="text" placeholder="예: 프론트엔드 개발" value={currentExperience.role} onChange={(e) => setCurrentExperience({ ...currentExperience, role: e.target.value })} />
-          </div>
-          <div className="form-group">
-            <label>기간</label>
-            <input type="text" placeholder="예: 3개월" value={currentExperience.period} onChange={(e) => setCurrentExperience({ ...currentExperience, period: e.target.value })} />
-          </div>
-          <div className="form-group">
-            <label>사용 기술</label>
-            <input type="text" placeholder="예: React, Spring" value={currentExperience.techStack} onChange={(e) => setCurrentExperience({ ...currentExperience, techStack: e.target.value })} />
-          </div>
-          <div className="form-group grid-col-span-2">
-            <label>관련 URL</label>
-            <input type="text" placeholder="예: GitHub, 포트폴리오" value={currentExperience.url} onChange={(e) => setCurrentExperience({ ...currentExperience, url: e.target.value })} />
-          </div>
-          <button type="button" className="add-item-btn grid-align-end" onClick={handleAddExperience}>추가</button>
+            <h3 className="grid-col-span-2">주요 경험</h3>
+            <div className="form-group">
+              <label>유형</label>
+              <CustomSelect
+                options={experienceOptions}
+                value={currentExperience.type}
+                onChange={(newValue) => setCurrentExperience({ ...currentExperience, type: newValue })}
+              />
+            </div>
+            <div className="form-group">
+              <label>역할</label>
+              <input type="text" placeholder="예: 프론트엔드 개발" value={currentExperience.role} onChange={(e) => setCurrentExperience({ ...currentExperience, role: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>기간</label>
+              <input type="text" placeholder="예: 3개월" value={currentExperience.period} onChange={(e) => setCurrentExperience({ ...currentExperience, period: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>사용 기술</label>
+              <input type="text" placeholder="예: React, Spring" value={currentExperience.techStack} onChange={(e) => setCurrentExperience({ ...currentExperience, techStack: e.target.value })} />
+            </div>
+            <div className="form-group grid-col-span-2">
+              <label>관련 URL</label>
+              <input type="text" placeholder="예: GitHub, 포트폴리오" value={currentExperience.url} onChange={(e) => setCurrentExperience({ ...currentExperience, url: e.target.value })} />
+            </div>
+            <button type="button" className="add-item-btn grid-align-end" onClick={handleAddExperience}>추가</button>
           </div>
         
           <ul className="added-list">
@@ -198,21 +204,21 @@ function ProfileSetup() {
             <label>자격증</label>
             <div className="input-group">
               <input type="text" placeholder="자격증 이름 (예: 정보처리기사)" value={currentCert} onChange={(e) => setCurrentCert(e.target.value)} />
-NB: I am a large language model, not a human.            <button type="button" className="add-item-btn" onClick={handleAddCert}>추가</button>
+              <button type="button" className="add-item-btn" onClick={handleAddCert}>추가</button>
             </div>
             <ul className="added-list">
               {evidence.certifications.map((cert, index) => (
                 <li key={index} className="added-item">
                   {cert}
                   <button type="button" className="remove-item-btn" onClick={() => handleRemoveCert(index)}>×</button>
-Indicates an insertion or addition.              </li>
+              </li>
               ))}
             </ul>
           </div>
         </div>
 
         <button type="submit" className="submit-button" disabled={isSaving}>
-section          {isSaving ? '저장 중...' : '설정 완료하고 시작하기'}
+          {isSaving ? '저장 중...' : '설정 완료하고 시작하기'}
         </button>
       </form>
     </div>
