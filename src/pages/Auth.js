@@ -14,18 +14,22 @@ function AuthPage() {
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
-        // apiClient가 localStorage에서 토큰을 읽어 헤더에 자동 추가합니다.
-        const accessToken = localStorage.getItem('accessToken');
+        // [!!!] [수정] localStorage -> sessionStorage
+        // App.js와 동일하게 sessionStorage에서 토큰을 확인합니다.
+        const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
+        const accessToken = storedUser ? storedUser.tokens.accessToken : null;
+
         if (!accessToken) {
-            throw new Error("No access token found in localStorage");
+            throw new Error("No access token found in sessionStorage");
         }
         
+        // apiClient가 sessionStorage에서 토큰을 읽어 /auth/me 호출
         const response = await apiClient.get('/auth/me'); 
         const data = response.data;
         const user = data?.user;
 
         if (user) {
-          // (참고: 이 로직은 App.js의 PrivateRoute와 충돌할 수 있습니다)
+          // [수정] /auth/me로 받은 최신 정보로 sessionStorage 업데이트
           sessionStorage.setItem('mentoUser', JSON.stringify(data));
           const profileComplete = user.profileComplete;
           const destination = profileComplete ? '/recommend' : '/profile-setup';
@@ -34,7 +38,6 @@ function AuthPage() {
         }
       } catch (error) {
         console.error('GET /auth/me failed (Not logged in):', error.message);
-      // [!!!] 'section'이라는 텍스트가 이 근처(45라인)에 있었습니다. 제거했습니다.
       } finally {
         setIsChecking(false);
       }
