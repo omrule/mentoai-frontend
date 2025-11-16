@@ -158,9 +158,6 @@ function PromptInput() {
           {/* 2-1. 메시지 출력 영역 */}
           <div className={styles.chatMessagesArea}>
 
-            {/* [!!!] [수정 3] 메시지를 아래로 밀어내기 위한 스페이서 div */}
-            <div style={{ flexGrow: 1 }} />
-
             {messages.map((msg, index) => (
               <div key={index} className={`${styles.chatMessage} ${styles[msg.role]}`}>
                 {msg.role === 'ai' && msg.title ? (
