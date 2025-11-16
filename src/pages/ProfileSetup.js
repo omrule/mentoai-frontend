@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import apiClient from '../api/apiClient'; // [수정] apiClient 임포트
+import apiClient from '../api/apiClient';
 import './Page.css';
 import CustomSelect from '../components/CustomSelect'; 
 
@@ -11,15 +11,14 @@ const skillOptions = [{ value: '상', label: '상 (업무 활용)' }, { value: '
 const experienceOptions = [{ value: 'PROJECT', label: '프로젝트' }, { value: 'INTERN', label: '인턴' }];
 
 /**
- * [수정] sessionStorage/localStorage에서 'userId'를 가져오는 헬퍼
+ * sessionStorage에서 'userId'를 가져오는 헬퍼
  */
 const getAuthDataFromStorage = () => {
   try {
-    // 님의 Auth.js 로직(sessionStorage에 저장)을 따릅니다.
     const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
     return { 
       userId: storedUser?.user?.userId || null,
-      token: storedUser?.tokens?.accessToken || null // apiClient가 자동 처리하므로 사실상 불필요
+      token: storedUser?.tokens?.accessToken || null 
     };
   } catch (e) {
     return { userId: null, token: null };
@@ -48,13 +47,12 @@ function ProfileSetup() {
   const handleRemoveCert = (index) => { setEvidence({ ...evidence, certifications: evidence.certifications.filter((_, i) => i !== index) }); };
 
   /**
-   * [수정] apiClient를 사용하는 handleSubmit (API 명세 기반)
+   * apiClient를 사용하는 handleSubmit (API 명세 기반)
    */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSaving(true);
     
-    // API 명세의 PUT /users/{userId}/profile에 맞는 페이로드
     const profileData = { 
         education, 
         careerGoal, 
@@ -69,20 +67,17 @@ function ProfileSetup() {
         throw new Error("인증 정보(userId)가 없습니다. 다시 로그인해주세요.");
       }
 
-      // apiClient 사용 (토큰 자동 주입)
       await apiClient.put(
         `/users/${userId}/profile`, 
         profileData
       );
       
-      // sessionStorage의 profileComplete 상태 수동 업데이트
       const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
       if (storedUser) {
         storedUser.user.profileComplete = true;
         sessionStorage.setItem('mentoUser', JSON.stringify(storedUser));
       }
       
-      // App.js가 라우팅을 새로고침하도록 페이지 강제 이동
       window.location.href = '/recommend';
 
     } catch (error) {
@@ -97,7 +92,7 @@ function ProfileSetup() {
     }
   };
 
-  // (JSX - UI 다듬기 및 쓰레기 텍스트 제거)
+  // (JSX - UI 다듬기)
   return (
     <div className="profile-setup-container">
       <form className="profile-card" onSubmit={handleSubmit}>
@@ -106,8 +101,10 @@ function ProfileSetup() {
         
         {/* --- 1. 기본 정보 섹션 --- */}
         <div className="form-section">
-          <h3>기본 학력</h3>
+          {/* [!!!] [수정] h3를 grid 안으로 이동시켰습니다. */}
           <div className="form-grid two-cols">
+            {/* [!!!] [수정] h3를 2칸 차지하도록 grid-col-span-2 클래스 적용 */}
+            <h3 className="grid-col-span-2">기본 학력</h3>
             <div className="form-group">
               <label>학교</label>
               <input type="text" value={education.school} onChange={(e) => setEducation({ ...education, school: e.target.value })} required />
@@ -152,7 +149,6 @@ function ProfileSetup() {
         {/* --- 3. 주요 경험 섹션 (UI 다듬기) --- */}
         <div className="form-section">
           <h3>주요 경험</h3>
-        {/* [수정] 난잡한 UI를 그리드 레이아웃으로 변경 */}
           <div className="form-grid experience-grid">
           <div className="form-group">
             <label>유형</label>
@@ -180,7 +176,6 @@ function ProfileSetup() {
           </div>
           <button type="button" className="add-item-btn grid-align-end" onClick={handleAddExperience}>추가</button>
           </div>
-        {/* [삭제] 텍스트 쓰레기 제거 */}
         
           <ul className="added-list">
             {experiences.map((exp, index) => (
@@ -211,7 +206,6 @@ function ProfileSetup() {
             </ul>
           </div>
         </div>
-        {/* [삭제] 텍스트 쓰레기 제거 */}
 
         <button type="submit" className="submit-button" disabled={isSaving}>
           {isSaving ? '저장 중...' : '설정 완료하고 시작하기'}
