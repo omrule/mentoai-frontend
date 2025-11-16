@@ -133,9 +133,9 @@
 .form-section {
   display: block !important; /* [!!!] [수정] 거대 공백 오류 방지를 위해 block으로 강제 */
   width: 100%;
-  margin-bottom: 15px; /* [!!!] [수정] 20px -> 15px (공백 줄임) */
+  margin-bottom: 10px; /* [!!!] [수정] 20px -> 15px (공백 줄임) */
   border-bottom: 1px solid #eee;
-  padding-bottom: 15px; /* [!!!] [수정] 20px -> 15px (공백 줄임) */
+  padding-bottom: 10px; /* [!!!] [수정] 20px -> 15px (공백 줄임) */
 }
 .form-section:last-of-type {
   border-bottom: none;
