@@ -2,38 +2,47 @@
 
 import React, { useState, useEffect } from 'react'; // [수정] useEffect 추가
 import { useNavigate } from 'react-router-dom';
+// [주석] 님이 주신 코드(11:25:21)에 이 라인이 있었으나, 리디렉션 방식에선 불필요하여 주석 처리합니다.
+// import { useGoogleLogin } from '@react-oauth/google'; 
 import apiClient from '../api/apiClient'; // MentoAI 백엔드 요청용
-// [삭제] import axios from 'axios';
+// [삭제] import axios from 'axios'; // apiClient로 통합
 import './Page.css';
 
-// [!!!] [삭제] const API_BASE_URL = 'https://mentoai.onrender.com';
+// [삭제] const API_BASE_URL = '...'; // apiClient로 통합
 
 function AuthPage() {
   const navigate = useNavigate();
   const [isChecking, setIsChecking] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
-  // 1) 로그인 상태 확인 (/auth/me) — apiClient가 토큰을 자동 주입
+  // 1) 로그인 상태 확인 (/auth/me)
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
-        // [수정] apiClient가 localStorage에서 토큰을 읽어 자동으로 헤더에 추가합니다.
-        const response = await apiClient.get('/auth/me'); // axios.get -> apiClient.get
+        // [수정] 님이 주신 코드의 로직(localStorage)을 따르며, apiClient를 사용합니다.
+        // apiClient가 localStorage에서 토큰을 읽어 헤더에 자동 추가합니다.
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
+            throw new Error("No access token found in localStorage");
+        }
+        
+        const response = await apiClient.get('/auth/me'); // [수정] axios.get -> apiClient.get
         const data = response.data;
         const user = data?.user;
 
         if (user) {
-          // [!!!] [경고] OAuthCallback.js가 { user, tokens } 객체를 저장하지 않으므로
-          // 이 로직은 App.js의 PrivateRoute와 충돌하여 무한 루프를 일으킬 수 있습니다.
-          // (일단 컴파일 오류만 수정합니다.)
+          // [중요] 님이 주신 OAuthCallback.js는 'mentoUser' 객체를 저장하지 않습니다.
+          // 따라서 이 코드는 App.js의 PrivateRoute와 충돌할 수 있습니다.
+          // (일단 님의 코드를 기반으로 컴파일 오류만 수정합니다.)
+          sessionStorage.setItem('mentoUser', JSON.stringify(data));
           const profileComplete = user.profileComplete;
           const destination = profileComplete ? '/recommend' : '/profile-setup';
           navigate(destination, { replace: true });
           return;
         }
       } catch (error) {
-        console.error('GET /auth/me failed:', error);
-      } finally {
+        console.error('GET /auth/me failed (Not logged in):', error.message);
+section      } finally {
         setIsChecking(false);
       }
     };
@@ -45,13 +54,14 @@ function AuthPage() {
     setIsLoading(true);
     // 콜백 전용 페이지로 돌아오게 설정
     const redirectUri = `${window.location.origin}/oauth/callback`;
-    
-    // [!!!] [수정] apiClient.defaults.baseURL에서 주소를 읽어옵니다.
+
+    // [수정] apiClient.defaults.baseURL에서 통합된 URL을 가져옵니다.
     const loginUrl = `${apiClient.defaults.baseURL}/auth/google/start?redirectUri=${encodeURIComponent(redirectUri)}`;
-    
-    window.location.href = loginUrl;
+    
+    window.location.href = loginUrl;
   };
 
+  // 3) 로딩 화면 (isChecking)
   if (isChecking) {
     return (
       <div className="auth-container">
@@ -63,6 +73,7 @@ function AuthPage() {
     );
   }
 
+  // 4) 로그인 버튼 화면
   return (
     <div className="auth-container">
       <div className="auth-card">
