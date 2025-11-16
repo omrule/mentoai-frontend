@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/apiClient'; // apiClient 임포트
+import styles from './Auth.module.css';
 
 export default function OAuthCallback() {
   const navigate = useNavigate();
@@ -66,23 +67,23 @@ export default function OAuthCallback() {
 
   if (error) {
     return (
-      <div className="auth-container">
-        <div className="auth-card">
-          <h1 className="auth-logo" style={{ color: '#dc3545' }}>Error</h1>
-          <p className="auth-subtitle">{error}</p>
-          <button className="google-login-button" onClick={() => window.location.href = '/login'}>
+      <div className={styles.authContainer}>
+        <div className={styles.authCard}>
+          <h1 className={styles.authLogo} style={{ color: '#dc3545' }}>Error</h1>
+          <p className={styles.authSubtitle}>{error}</p>
+          <button className={styles.googleLoginButton} onClick={() => window.location.href = '/login'}>
             <span>로그인 페이지로 돌아가기</span>
           </button>
-        </div>
-      </div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h1 className="auth-logo">MentoAI</h1>
-        <p className="auth-subtitle">{message}</p>
+    <div className={styles.authContainer}>
+      <div className={styles.authCard}>
+        <h1 className={styles.authLogo}>MentoAI</h1>
+        <p className={styles.authSubtitle}>{message}</p>
         <div style={{ width: '40px', height: '40px', border: '4px solid #f3f3f3', borderTop: '4px solid #007bff', borderRadius: '50%', margin: '20px auto', animation: 'spin 1s linear infinite' }}></div>
       </div>
     </div>
