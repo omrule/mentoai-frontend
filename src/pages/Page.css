@@ -36,7 +36,8 @@
   min-height: 100vh;
   padding: 40px 20px;
   box-sizing: border-box;
-  background-color: #f8f9fa;
+  /* [!!!] [수정] 난잡한 배경 문제를 해결하기 위해 회색(#f8f9fa) -> 흰색(#ffffff)으로 변경 */
+  background-color: #ffffff;
 }
 .auth-card {
   width: 100%;
@@ -45,7 +46,7 @@
   background-color: white;
   border-radius: 16px;
   box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-  text-align: center; /* [!!!] auth-card 자체가 중앙 정렬입니다. */
+  text-align: center;
   box-sizing: border-box;
 }
 .profile-card {
@@ -75,7 +76,7 @@
   color: #555; 
   margin-bottom: 40px; 
   line-height: 1.6;
-  text-align: center; /* [!!!] 이 코드가 설명글을 중앙 정렬합니다. */
+  text-align: center; /* 설명글 중앙 정렬 */
 }
 
 .google-login-button {
@@ -95,13 +96,13 @@
   gap: 12px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   box-sizing: border-box; 
-  white-space: nowrap; /* [!!!] 이 코드가 버튼 텍스트 줄바꿈을 방지합니다. */
+  white-space: nowrap; /* 버튼 텍스트 줄바꿈 방지 */
 }
 .google-login-button:hover { background-color: #f8f9fa; border-color: #ced4da; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
 .google-icon { 
   width: 22px; 
   height: 22px; 
-  flex-shrink: 0; /* [!!!] 로고가 찌그러지지 않게 합니다. */
+  flex-shrink: 0;
 }
 .auth-helper-text { margin-top: 20px; font-size: 13px; color: #888; line-height: 1.5; text-align: center; }
 
@@ -118,7 +119,7 @@
   text-align: center;
 }
 .form-section {
-  display: block; /* [!!!] 거대 공백(flex/grid) 오류 방지를 위해 block으로 강제 */
+  display: block; /* [!!!] [수정] 거대 공백(flex/grid) 오류 방지를 위해 block으로 강제 */
   width: 100%;
   margin-bottom: 20px; 
   border-bottom: 1px solid #eee;
@@ -141,9 +142,8 @@
 .form-grid.two-cols {
   display: grid;
   gap: 20px;
-  /* [!!!] 2x2 그리드 레이아웃 (최대 2열) */
-  grid-template-columns: repeat(2, 1fr);
-  max-width: 900px; /* [!!!] 폼이 너무 넓게 퍼지는 것을 방지 */
+  grid-template-columns: repeat(2, 1fr); /* 2x2 그리드 레이아웃 */
+  max-width: 900px; /* 폼이 너무 넓게 퍼지는 것을 방지 */
 }
 /* 2x2 그리드 모바일 반응형 */
 @media (max-width: 768px) {
@@ -170,6 +170,12 @@
   border-radius: 8px;
   font-size: 15px;
   box-sizing: border-box;
+  /* [!!!] [수정] CustomSelect(37px)와 높이를 맞춥니다. */
+  height: 37px;
+}
+/* [추가] textarea는 높이가 37px이면 안되므로, auto로 복원 */
+.form-group textarea {
+  height: auto;
 }
 
 .input-group input {
@@ -194,7 +200,6 @@
   align-items: center;
 }
 .input-group.experience-group {
-  /* [삭제] 이전 그리드 CSS (새로운 .form-grid.experience-grid로 대체됨) */
   display: grid;
   grid-template-columns: 1fr 1.5fr 1fr 1.5fr 2fr auto;
   gap: 10px;
