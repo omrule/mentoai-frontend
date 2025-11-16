@@ -7,7 +7,13 @@ import CustomSelect from '../components/CustomSelect';
 // (옵션 정의...)
 const skillOptions = [{ value: '상', label: '상 (업무 활용)' }, { value: '중', label: '중 (토이 프로젝트)' }, { value: '하', label: '하 (학습 경험)' }];
 const experienceOptions = [{ value: 'PROJECT', label: '프로젝트' }, { value: 'INTERN', label: '인턴' }];
-
+const gradeOptions = [
+  { value: '1', label: '1학년' },
+  { value: '2', label: '2학년' },
+  { value: '3', label: '3학년' },
+  { value: '4', label: '4학년' },
+  { value: '5', label: '5학년 이상' } // 5학년제 또는 졸업 이상
+];
 
 /**
  * sessionStorage에서 인증 정보를 가져오는 헬퍼
@@ -128,7 +134,11 @@ function ProfileSetup() {
             </div>
             <div className="form-group">
               <label>학년</label>
-              <input type="number" value={education.grade} onChange={(e) => setEducation({ ...education, grade: e.target.value })} required min="1" max="5" placeholder="예: 3" />
+              <CustomSelect
+                options={gradeOptions}
+                value={education.grade}
+                onChange={(newValue) => setEducation({ ...education, grade: newValue })}
+              />
             </div>
             <div className="form-group">
               <label>목표 직무</label>
