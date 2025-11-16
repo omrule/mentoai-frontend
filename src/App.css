@@ -33,24 +33,20 @@ body {
   - 불필요한 스크롤바를 만들었던 'min-height'와 'margin-top'을 제거합니다.
 */
 .content {
-  flex-grow: 1;
   padding: 0; /* 기존 코드 유지 (스크롤바 문제와 무관) */
   background-color: #ffffff;
   box-sizing: border-box;
-  /* 제거됨: min-height: calc(100vh - 60px); 
-    제거됨: margin-top: 60px; 
-  */
+  margin-top: 60px;
+  min-height: calc(100vh - 60px);
 }
 
 /* 채팅 페이지 전용 content 클래스 (위와 동일하게 수정) */
 .content-chat {
-  flex-grow: 1;
   padding: 0; 
   background-color: #ffffff;
   box-sizing: border-box;
-  /* 제거됨: min-height: calc(100vh - 60px); 
-    제거됨: margin-top: 60px; 
-  */
+  margin-top: 60px;
+  height: calc(100vh - 60px);
 }
 
 /* [!!!] [수정] .content-full (헤더가 없는 전체 화면 페이지용)
