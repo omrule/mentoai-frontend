@@ -9,6 +9,7 @@ import ProfileSetup from './pages/ProfileSetup';
 import PromptInput from './pages/PromptInput';
 import ScheduleCalendar from './pages/ScheduleCalendar';
 import MyPage from './pages/MyPage';
+import OAuthCallback from './pages/OAuthCallback';
 import './App.css'; 
 // ---
 
@@ -99,6 +100,7 @@ function App() {
           {/* 3. 기본 경로 리디렉션 */}
           <Route path="/" element={<Navigate to={isAuthenticated ? "/recommend" : "/login"} replace />} />
           <Route path="*" element={<Navigate to="/" />} />
+          <Route path="/oauth/callback" element={<OAuthCallback />} />
         </Routes>
       </main>
     </div>

@@ -4,7 +4,7 @@ import './Page.css';
 import CustomSelect from '../components/CustomSelect';
 
 // 백엔드 서버 실제 주소
-const API_BASE_URL = 'https://mentoai.onrender.com';
+const API_BASE_URL = 'http://localhost:8080'//'https://mentoai.onrender.com';
 
 // (옵션 정의...)
 const skillOptions = [{ value: '상', label: '상 (업무 활용)' }, { value: '중', label: '중 (토이 프로젝트)' }, { value: '하', label: '하 (학습 경험)' }];
