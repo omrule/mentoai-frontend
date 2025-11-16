@@ -31,7 +31,7 @@
 .auth-container {
   display: flex;
   justify-content: center;
-  align-items: center; /* [!!!] [수정] 다시 center로 (수직 중앙 정렬) */
+  align-items: center; /* [!!!] [수정] center로 (수직 중앙 정렬) */
   width: 100%;
   min-height: 100vh;
   padding: 40px 20px;
@@ -43,7 +43,7 @@
 .profile-setup-container {
   display: flex;
   justify-content: center;
-  align-items: flex-start; /* [!!!] [수정] flex-start 유지 (상단 정렬) */
+  align-items: flex-start; /* [!!!] [수정] flex-start (상단 정렬) */
   width: 100%;
   min-height: 100vh;
   padding: 40px 20px; /* [!!!] [수정] 상단 여백 추가 */
