@@ -124,7 +124,7 @@ function ProfileSetup() {
         {/* --- 2. 기술 스택 섹션 --- */}
         <div className="form-section">
           <h3>기술 스택</h3>
-          <div className="input-group skill-group">
+          <div className="form-grid skill-grid">
             <input type="text" placeholder="기술 이름 (예: React)" value={currentSkill.name} onChange={(e) => setCurrentSkill({ ...currentSkill, name: e.target.value })} />
             <CustomSelect
               options={skillOptions}
