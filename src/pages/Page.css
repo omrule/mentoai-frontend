@@ -95,6 +95,7 @@
   gap: 12px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   box-sizing: border-box; 
+  white-space: nowrap; /* [!!!] [수정] 텍스트 줄바꿈 방지 */
 }
 .google-login-button:hover { background-color: #f8f9fa; border-color: #ced4da; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
 .google-icon { width: 22px; height: 22px; }
@@ -113,6 +114,8 @@
   text-align: center;
 }
 .form-section {
+  display: block; /* [!!!] [수정] 레이아웃 깨짐 방지를 위해 block으로 강제 */
+  width: 100%;
   margin-bottom: 20px; 
   border-bottom: 1px solid #eee;
   padding-bottom: 20px; 
@@ -132,12 +135,14 @@
   gap: 20px;
 }
 .form-grid.two-cols {
-  grid-template-columns: repeat(2, 1fr);
+  display: grid;
+  gap: 20px;
+  /* [!!!] [수정] 2열 고정 대신 반응형 그리드로 변경하고, 최대 너비 제한 */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  max-width: 800px; 
 }
 @media (max-width: 640px) {
-  .form-grid.two-cols {
-    grid-template-columns: 1fr;
-  }
+  /* [삭제] two-cols의 미디어 쿼리는 위 auto-fit으로 대체됨 */
 }
 
 .form-group {
@@ -193,6 +198,7 @@
   grid-template-columns: 1fr auto auto;
   gap: 10px;
   align-items: center;
+  max-width: 800px; /* [추가] two-cols와 너비 맞춤 */
 }
 .input-group.skill-group .custom-select-wrapper {
   width: 200px;
