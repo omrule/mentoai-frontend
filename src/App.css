@@ -60,4 +60,5 @@ body {
   margin-top: 0; 
   box-sizing: border-box;
   /* 'min-height: 100vh'는 부모가 이미 100vh이므로 중복되어 제거해도 됩니다. */
+  height: 100vh;
 }
