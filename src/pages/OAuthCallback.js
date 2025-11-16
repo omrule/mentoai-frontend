@@ -80,7 +80,7 @@ export default function OAuthCallback() {
 
   return (
     <div className="auth-container">
-      <div className_user="auth-card">
+      <div className="auth-card">
         <h1 className="auth-logo">MentoAI</h1>
         <p className="auth-subtitle">{message}</p>
         <div style={{ width: '40px', height: '40px', border: '4px solid #f3f3f3', borderTop: '4px solid #007bff', borderRadius: '50%', margin: '20px auto', animation: 'spin 1s linear infinite' }}></div>
