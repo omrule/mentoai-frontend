@@ -1,8 +1,8 @@
 /* src/pages/Page.css */
 
 .profile-card-container {
-  margin: -30px; 
-  padding: 20px; 
+  margin: 0; 
+  padding: 30px; 
   box-sizing: border-box;
   background-color: #f8f9fa;
   display: flex;
@@ -14,7 +14,7 @@
 .page-container {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 30px;
 }
 .page-container h2 {
   font-size: 28px;
