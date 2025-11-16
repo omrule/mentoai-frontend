@@ -31,10 +31,11 @@
 .auth-container, .profile-setup-container {
   display: flex;
   justify-content: center;
-  align-items: center;
+  /* [!!!] [수정] align-items: center -> flex-start (박스를 위로 올림) */
+  align-items: flex-start;
   width: 100%;
   min-height: 100vh;
-  padding: 40px 20px;
+  padding: 40px 20px; /* 상단 여백 */
   box-sizing: border-box;
   background-color: #ffffff; /* [!!!] [수정] 배경 흰색으로 통일 */
 }
@@ -118,7 +119,6 @@
   text-align: center;
 }
 .form-section {
-  display: block !important; /* [!!!] [수정] 거대 공백 오류 방지를 위해 block으로 강제 */
   width: 100%;
   margin-bottom: 20px; 
   border-bottom: 1px solid #eee;
@@ -200,7 +200,7 @@
   align-items: center;
   max-width: 900px; /* [!!!] [추가] 너비 통일 */
 }
-/* [삭제] .input-group.experience-group ( .form-grid.two-cols로 대체됨 ) */
+/* [!!!] [삭제] .input-group.experience-group ( .form-grid.two-cols로 대체됨 ) */
 
 /* [!!!] [수정] 기술 스택 섹션 그리드 레이아웃 */
 .form-grid.skill-grid {
@@ -212,8 +212,6 @@
 }
 
 @media (max-width: 768px) {
-  /* [삭제] .input-group.experience-group (불필요) */
-  
   /* [!!!] [수정] 기술 스택 모바일 레이아웃 */
   .form-grid.skill-grid {
     grid-template-columns: 1fr;
@@ -775,14 +773,7 @@
   fill: #adb5bd; 
 }
 
-/* --- [!!!] [수정] ProfileSetup '주요 경험' 그리드 UI --- */
-.form-grid.experience-grid {
-  /* [!!!] [수정] URL 삭제에 맞춰 2x2 그리드로 변경 */
-  grid-template-columns: repeat(2, 1fr); 
-  gap: 15px 20px;
-  align-items: end;
-  max-width: 900px; /* [!!!] [추가] 너비 통일 */
-}
+/* [!!!] [삭제] .form-grid.experience-grid ( two-cols로 통합됨 ) */
 
 /* 2칸을 차지하는 CSS 클래스 */
 .grid-col-span-2 {
@@ -801,24 +792,24 @@
   height: 37px;
   justify-self: end;
 }
+/* [!!!] [추가] 2x2 그리드 내의 버튼은 너비를 100%로 설정 */
+.form-grid.two-cols .grid-align-end {
+  width: 100%;
+  justify-self: auto;
+}
+
 
 /* [!!!] [수정] 기술 스택 그리드 버튼 정렬 */
 .form-grid.skill-grid .grid-align-end {
   grid-column: 3 / 4;
 }
 
-/* [!!!] [수정] 주요 경험 그리드 버튼 정렬 (URL 삭제로 2열이 됨) */
-.form-grid.two-cols .grid-align-end {
-  grid-column: 2 / 3;
-  width: 100%; /* [!!!] [수정] 버튼이 100% 너비를 갖도록 */
-  justify-self: auto; /* [!!!] [수정] */
-}
+/* [!!!] [삭제] .form-grid.experience-grid .grid-align-end ( two-cols로 통합됨 ) */
 
 
 /* '주요 경험' 그리드 반응형 (모바일) */
 @media (max-width: 768px) {
   .form-grid.two-cols, /* [!!!] [추가] 기본 학력도 1열로 */
-  .form-grid.experience-grid,
   .form-grid.skill-grid { 
     grid-template-columns: 1fr; 
   }

@@ -107,9 +107,10 @@ function ProfileSetup() {
         
         {/* --- 1. 기본 정보 섹션 --- */}
         <div className="form-section">
-          {/* [!!!] [수정] h3를 grid 바깥으로 이동 (주요 경험과 통일) */}
-          <h3>기본 학력</h3>
+          {/* [!!!] [수정] h3를 grid 안으로 이동시켰습니다. */}
           <div className="form-grid two-cols">
+            {/* [!!!] [수정] h3를 2칸 차지하도록 grid-col-span-2 클래스 적용 */}
+            <h3 className="grid-col-span-2">기본 학력</h3>
             <div className="form-group">
               <label>학교</label>
               <input type="text" value={education.school} onChange={(e) => setEducation({ ...education, school: e.target.value })} required />
@@ -131,9 +132,8 @@ function ProfileSetup() {
 
         {/* --- 2. 기술 스택 섹션 --- */}
         <div className="form-section">
-          {/* [!!!] [수정] h3를 grid 바깥으로 이동 (주요 경험과 통일) */}
-          <h3>기술 스택</h3>
           <div className="form-grid skill-grid">
+            <h3 className="grid-col-span-3">기술 스택</h3>
             <div className="form-group">
               <label>기술 이름</label>
               <input type="text" placeholder="예: React" value={currentSkill.name} onChange={(e) => setCurrentSkill({ ...currentSkill, name: e.target.value })} />
@@ -160,10 +160,9 @@ function ProfileSetup() {
 
         {/* --- 3. 주요 경험 섹션 (UI 다듬기) --- */}
         <div className="form-section">
-          {/* [!!!] [수정] h3를 grid 바깥으로 이동 (통일성) */}
-          <h3>주요 경험</h3>
           {/* [!!!] [수정] "기본 학력"과 동일한 'two-cols' 그리드를 사용합니다. */}
           <div className="form-grid two-cols">
+            <h3 className="grid-col-span-2">주요 경험</h3>
             <div className="form-group">
               <label>유형</label>
               <CustomSelect
