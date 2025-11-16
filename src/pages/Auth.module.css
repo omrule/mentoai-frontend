@@ -1,0 +1,80 @@
+/* src/pages/Auth.module.css */
+
+/* --- AuthPage (로그인 화면) 전용 --- */
+.authContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;
+  padding: 40px 20px;
+  box-sizing: border-box;
+  background-color: #ffffff; 
+}
+
+.authCard {
+  width: 100%;
+  max-width: 420px;
+  padding: 50px;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.authLogo {
+  font-size: 42px;
+  font-weight: 800;
+  color: #007bff;
+  margin: 0 0 15px 0;
+  text-align: center;
+}
+
+/* [수정] 요청하신 UI 수정 사항 반영 */
+.authSubtitle { 
+  font-size: 16px; 
+  color: #6c757d; 
+  margin-bottom: 30px; 
+  line-height: 1.6;
+  text-align: center; 
+}
+
+.googleLoginButton {
+  width: 100%; 
+  padding: 14px; 
+  font-size: 16px; 
+  font-weight: 600;
+  background-color: #ffffff; 
+  color: #333; 
+  border: 1px solid #dee2e6;
+  border-radius: 8px; 
+  cursor: pointer; 
+  transition: all 0.2s ease-in-out;
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  gap: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-sizing: border-box; 
+  white-space: nowrap; 
+}
+.googleLoginButton:hover { 
+  background-color: #f8f9fa; 
+  border-color: #ced4da; 
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+}
+
+.googleIcon { 
+  width: 22px; 
+  height: 22px; 
+  flex-shrink: 0;
+}
+
+.authHelperText { 
+  margin-top: 20px; 
+  font-size: 13px; 
+  color: #888; 
+  line-height: 1.5; 
+  text-align: center; 
+}

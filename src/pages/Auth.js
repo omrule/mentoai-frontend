@@ -3,78 +3,83 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/apiClient'; // MentoAI 백엔드 요청용
-import './Page.css';
+// [수정] Page.css 대신 Auth.module.css를 import
+import styles from './Auth.module.css';
 
 function AuthPage() {
-  const navigate = useNavigate();
-  const [isChecking, setIsChecking] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const [isChecking, setIsChecking] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // 1) 로그인 상태 확인 (/auth/me)
-  useEffect(() => {
-    const checkLoginStatus = async () => {
-      try {
-        const accessToken = localStorage.getItem('accessToken');
+  // 1) 로그인 상태 확인 (/auth/me)
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
             throw new Error("No access token found in localStorage");
         }
         
-        const response = await apiClient.get('/auth/me'); 
-        const data = response.data;
-        const user = data?.user;
+        const response = await apiClient.get('/auth/me'); 
+        const data = response.data;
+        const user = data?.user;
 
-        if (user) {
-          sessionStorage.setItem('mentoUser', JSON.stringify(data));
-          const profileComplete = user.profileComplete;
-          const destination = profileComplete ? '/recommend' : '/profile-setup';
-          navigate(destination, { replace: true });
-          return;
-        }
-      } catch (error) {
-        console.error('GET /auth/me failed (Not logged in):', error.message);
-      } finally {
-        setIsChecking(false);
-      }
-    };
-    checkLoginStatus();
-  }, [navigate]);
+        if (user) {
+          sessionStorage.setItem('mentoUser', JSON.stringify(data));
+          const profileComplete = user.profileComplete;
+          const destination = profileComplete ? '/recommend' : '/profile-setup';
+          navigate(destination, { replace: true });
+          return;
+        }
+      } catch (error) {
+        console.error('GET /auth/me failed (Not logged in):', error.message);
+      } finally {
+        setIsChecking(false);
+      }
+    };
+    checkLoginStatus();
+  }, [navigate]);
 
-  const handleGoogleLogin = () => {
-    if (isLoading) return;
-    setIsLoading(true);
-    const redirectUri = `${window.location.origin}/oauth/callback`;
-    const loginUrl = `${apiClient.defaults.baseURL}/auth/google/start?redirectUri=${encodeURIComponent(redirectUri)}`;
+  const handleGoogleLogin = () => {
+    if (isLoading) return;
+    setIsLoading(true);
+    const redirectUri = `${window.location.origin}/oauth/callback`;
+    const loginUrl = `${apiClient.defaults.baseURL}/auth/google/start?redirectUri=${encodeURIComponent(redirectUri)}`;
     window.location.href = loginUrl;
-  };
+  };
 
   // 3) 로딩 화면 (isChecking)
-  if (isChecking) {
-    return (
-      <div className="auth-container">
-        <div className="auth-card">
-          <h1 className="auth-logo">MentoAI</h1>
-          <p className="auth-subtitle">로그인 상태를 확인 중입니다...</p>
-        </div>
-      </div>
-    );
-  }
+  if (isChecking) {
+    return (
+      // [수정] className 적용
+      <div className={styles.authContainer}>
+        <div className={styles.authCard}>
+          <h1 className={styles.authLogo}>MentoAI</h1>
+          <p className={styles.authSubtitle}>로그인 상태를 확인 중입니다...</p>
+        </div>
+      </div>
+    );
+  }
 
   // 4) 로그인 버튼 화면
-  return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h1 className="auth-logo">MentoAI</h1>
-        <p className="auth-subtitle">
+  return (
+    // [수정] className 적용
+    <div className={styles.authContainer}>
+      <div className={styles.authCard}>
+        <h1 className={styles.authLogo}>MentoAI</h1>
+        {/* [수정] className 적용 */}
+        <p className={styles.authSubtitle}>
           AI와 함께 당신의 진로를 설계하고<br />
           맞춤형 활동을 추천받아 보세요.
-        </p>
-        <button className="google-login-button" onClick={handleGoogleLogin} disabled={isLoading}>
-          {isLoading ? (
+        </p>
+        {/* [수정] className 적용 */}
+        <button className={styles.googleLoginButton} onClick={handleGoogleLogin} disabled={isLoading}>
+          {isLoading ? (
             <span>Google로 이동 중...</span>
           ) : (
             <>
-              {/* [!!!] 이 SVG 코드가 구글 로고입니다! */}
-              <svg className="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              {/* [수정] className 적용 */}
+              <svg className={styles.googleIcon} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
@@ -83,10 +88,10 @@ function AuthPage() {
               <span>Google 계정으로 시작하기</span>
             </>
           )}
-        </button>
-      </div>
-    </div>
-  );
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export default AuthPage;
