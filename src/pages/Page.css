@@ -36,7 +36,7 @@
   min-height: 100vh;
   padding: 40px 20px;
   box-sizing: border-box;
-  background-color: #ffffff; /* [수정] 배경 흰색으로 통일 */
+  background-color: #ffffff; /* [!!!] [수정] 배경 흰색으로 통일 */
 }
 .auth-card {
   width: 100%;
@@ -75,7 +75,7 @@
   color: #555; 
   margin-bottom: 40px; 
   line-height: 1.6;
-  text-align: center; /* [수정] 설명글 중앙 정렬 */
+  text-align: center; /* [!!!] 설명글 중앙 정렬 */
 }
 
 .google-login-button {
@@ -95,7 +95,7 @@
   gap: 12px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   box-sizing: border-box; 
-  white-space: nowrap; /* 버튼 텍스트 줄바꿈 방지 */
+  white-space: nowrap; /* [!!!] 버튼 텍스트 줄바꿈 방지 */
 }
 .google-login-button:hover { background-color: #f8f9fa; border-color: #ced4da; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
 .google-icon { 
@@ -118,7 +118,6 @@
   text-align: center;
 }
 .form-section {
-  display: block !important; /* [!!!] [수정] 거대 공백 오류 방지를 위해 block으로 강제 */
   width: 100%;
   margin-bottom: 20px; 
   border-bottom: 1px solid #eee;
@@ -128,12 +127,14 @@
   border-bottom: none;
   padding-bottom: 10px;
 }
-/* [!!!] [수정] h3가 grid 안에 있거나(새 코드) 바깥에 있어도(옛 코드) 모두 처리 */
-.form-section h3,
+/* [!!!] [수정] h3가 grid 안에 있을 때를 대비해 margin-bottom 제거 */
 .form-grid h3 {
   font-size: 18px;
   color: #333;
-  margin-top: 0;
+  margin: 0; /* [!!!] 불필요한 마진 제거 */
+}
+/* [!!!] [추가] h3가 grid 바깥에 있을 때(증빙자료 등)의 스타일 */
+.form-section > h3 {
   margin-bottom: 15px;
 }
 
@@ -143,9 +144,9 @@
 }
 .form-grid.two-cols {
   display: grid;
-  gap: 15px 20px; 
-  grid-template-columns: repeat(2, 1fr); 
-  max-width: 900px; 
+  gap: 15px 20px; /* [수정] 간격 조정 */
+  grid-template-columns: repeat(2, 1fr); /* 2x2 그리드 레이아웃 */
+  max-width: 900px; /* 폼이 너무 넓게 퍼지는 것을 방지 */
   align-items: end;
 }
 /* 2x2 그리드 모바일 반응형 */
@@ -156,7 +157,7 @@
 }
 
 .form-group {
-  margin-bottom: 0; 
+  margin-bottom: 0; /* [!!!] [수정] 그리드 gap으로 간격을 관리하므로 margin 제거 */
   text-align: left;
 }
 .form-group label {
@@ -194,6 +195,7 @@
   gap: 10px;
   margin-bottom: 10px;
   align-items: center;
+  max-width: 900px; /* [!!!] [추가] 너비 통일 */
 }
 /* [삭제] .input-group.experience-group ( .form-grid.experience-grid로 대체됨 ) */
 
@@ -203,7 +205,7 @@
   row-gap: 10px; /* [!!!] [수정] 상하 간격 */
   column-gap: 15px; /* [!!!] [수정] 좌우 간격 */
   align-items: end;
-  max-width: 900px; 
+  max-width: 900px; /* [!!!] [수정] 너비 통일 */
 }
 
 @media (max-width: 768px) {
@@ -800,7 +802,7 @@
   grid-column: 3 / 4;
 }
 
-/* [!!!] [수정] 주요 경험 그리드 버튼 정렬 */
+/* [!!!] [수정] 주요 경험 그리드 버튼 정렬 (URL 삭제로 2열이 됨) */
 .form-grid.experience-grid .grid-align-end {
   grid-column: 2 / 3;
 }

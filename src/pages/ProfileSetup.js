@@ -32,7 +32,8 @@ function ProfileSetup() {
   const [skills, setSkills] = useState([]);
   const [currentSkill, setCurrentSkill] = useState({ name: '', level: '중' });
   const [experiences, setExperiences] = useState([]);
-  const [currentExperience, setCurrentExperience] = useState({ type: 'PROJECT', role: '', period: '', techStack: '', url: '' });
+  // [!!!] [수정] url 필드 삭제
+  const [currentExperience, setCurrentExperience] = useState({ type: 'PROJECT', role: '', period: '', techStack: '' });
   const [evidence, setEvidence] = useState({ certifications: [] });
   const [currentCert, setCurrentCert] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -41,7 +42,8 @@ function ProfileSetup() {
   // (이벤트 핸들러들...)
   const handleAddSkill = () => { if (currentSkill.name) { setSkills([...skills, currentSkill]); setCurrentSkill({ name: '', level: '중' }); } };
   const handleRemoveSkill = (index) => setSkills(skills.filter((_, i) => i !== index));
-  const handleAddExperience = () => { if (currentExperience.role && currentExperience.period) { setExperiences([...experiences, currentExperience]); setCurrentExperience({ type: 'PROJECT', role: '', period: '', techStack: '', url: '' }); } };
+  // [!!!] [수정] url 필드 삭제
+  const handleAddExperience = () => { if (currentExperience.role && currentExperience.period) { setExperiences([...experiences, currentExperience]); setCurrentExperience({ type: 'PROJECT', role: '', period: '', techStack: '' }); } };
   const handleRemoveExperience = (index) => setExperiences(experiences.filter((_, i) => i !== index));
   const handleAddCert = () => { if (currentCert) { setEvidence({ ...evidence, certifications: [...evidence.certifications, currentCert] }); setCurrentCert(''); } };
   const handleRemoveCert = (index) => { setEvidence({ ...evidence, certifications: evidence.certifications.filter((_, i) => i !== index) }); };
@@ -116,7 +118,7 @@ function ProfileSetup() {
             <div className="form-group">
               <label>전공</label>
               <input type="text" value={education.major} onChange={(e) => setEducation({ ...education, major: e.target.value })} required />
-section          </div>
+            </div>
             <div className="form-group">
               <label>학년</label>
               <input type="number" value={education.grade} onChange={(e) => setEducation({ ...education, grade: e.target.value })} required min="1" max="5" />
@@ -180,17 +182,15 @@ section          </div>
               <label>사용 기술</label>
               <input type="text" placeholder="예: React, Spring" value={currentExperience.techStack} onChange={(e) => setCurrentExperience({ ...currentExperience, techStack: e.target.value })} />
             </div>
-            <div className="form-group grid-col-span-2">
-              <label>관련 URL</label>
-              <input type="text" placeholder="예: GitHub, 포트폴리오" value={currentExperience.url} onChange={(e) => setCurrentExperience({ ...currentExperience, url: e.target.value })} />
-            </div>
+            {/* [!!!] [삭제] 관련 URL 필드 삭제 */}
             <button type="button" className="add-item-btn grid-align-end" onClick={handleAddExperience}>추가</button>
           </div>
         
           <ul className="added-list">
             {experiences.map((exp, index) => (
               <li key={index} className="added-item">
-                [{exp.type}] {exp.role} ({exp.period}) - {exp.techStack} {exp.url && `(${exp.url})`}
+                {/* [!!!] [수정] url 표시 삭제 */}
+                [{exp.type}] {exp.role} ({exp.period}) - {exp.techStack}
                 <button type="button" className="remove-item-btn" onClick={() => handleRemoveExperience(index)}>×</button>
               </li>
             ))}
