@@ -132,9 +132,9 @@
 }
 .form-section {
   width: 100%;
-  margin-bottom: 15px; /* [!!!] [수정] 공백 줄임 */
+  margin-bottom: 15px; /* [!!!] [수정] 20px -> 15px (공백 줄임) */
   border-bottom: 1px solid #eee;
-  padding-bottom: 15px; /* [!!!] [수정] 공백 줄임 */
+  padding-bottom: 15px; /* [!!!] [수정] 20px -> 15px (공백 줄임) */
 }
 .form-section:last-of-type {
   border-bottom: none;
@@ -147,7 +147,7 @@
   margin: 0; 
 }
 .form-section > h3 {
-  font-size: 18px; /* [!!!] [추가] 통일성을 위해 h3 스타일 지정 */
+  font-size: 18px; 
   color: #333;
   margin-top: 0;
   margin-bottom: 15px;
@@ -207,7 +207,6 @@
   max-width: 900px; 
 }
 
-/* [!!!] [수정] 기술 스택 섹션 그리드 레이아웃 */
 .form-grid.skill-grid {
   grid-template-columns: 1fr auto auto; 
   row-gap: 10px; 
@@ -217,7 +216,6 @@
 }
 
 @media (max-width: 768px) {
-  /* [!!!] [수정] 기술 스택 모바일 레이아웃 */
   .form-grid.skill-grid {
     grid-template-columns: 1fr;
   }
