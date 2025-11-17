@@ -26,7 +26,7 @@ function AuthPage() {
 
         if (user) {
           sessionStorage.setItem('mentoUser', JSON.stringify(data));
-          const profileComplete = user.profileComplete;
+          const profileComplete = data.profileComplete;  // 변경된 부분
           const destination = profileComplete ? '/recommend' : '/profile-setup';
           navigate(destination, { replace: true });
           return;
