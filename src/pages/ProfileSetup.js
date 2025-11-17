@@ -54,31 +54,49 @@ function ProfileSetup() {
   const handleRemoveCert = (index) => { setEvidence({ ...evidence, certifications: evidence.certifications.filter((_, i) => i !== index) }); };
 
   /**
-   * apiClient를 사용하는 handleSubmit
+   * OpenAPI 스펙에 맞게 데이터 변환 및 API 호출
    */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSaving(true);
     
-    // [수정] API 명세에 맞게 experienceFit에서 url 제거
-    const profileData = { 
-        education, 
-        careerGoal, 
-        skillFit: skills, 
-        experienceFit: experiences.map(exp => ({
-          type: exp.type,
-          role: exp.role,
-          period: exp.period,
-          techStack: exp.techStack
-        })), 
-        evidenceFit: evidence 
-    };
-
     try {
       const { userId } = getAuthDataFromStorage();
       if (!userId) {
         throw new Error("인증 정보(userId)가 없습니다. 다시 로그인해주세요.");
       }
+
+      // OpenAPI UserProfileUpsert 스펙에 맞게 데이터 변환
+      const profileData = {
+        university: {
+          universityName: education.school || undefined,
+          major: education.major || undefined,
+          grade: education.grade ? parseInt(education.grade) : undefined
+        },
+        interestDomains: careerGoal ? [careerGoal] : [],
+        techStack: skills.map(skill => ({
+          name: skill.name,
+          level: skill.level === '상' ? 'ADVANCED' : 
+                 skill.level === '중' ? 'INTERMEDIATE' : 'BEGINNER'
+        })),
+        experiences: experiences.map(exp => {
+          // period를 startDate/endDate로 파싱 (예: "2023-01 ~ 2023-06" 또는 "3개월")
+          const periodParts = exp.period.split('~').map(s => s.trim());
+          const startDate = periodParts[0] || undefined;
+          const endDate = periodParts[1] || undefined;
+          
+          return {
+            type: exp.type === 'PROJECT' ? 'PROJECT' : 'INTERNSHIP',
+            role: exp.role,
+            startDate: startDate,
+            endDate: endDate,
+            techStack: exp.techStack ? exp.techStack.split(',').map(t => t.trim()) : []
+          };
+        }),
+        certifications: evidence.certifications.map(cert => ({
+          name: cert
+        }))
+      };
 
       // apiClient.put 사용
       await apiClient.put(

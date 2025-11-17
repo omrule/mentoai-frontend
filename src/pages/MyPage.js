@@ -55,16 +55,48 @@ function MyPage() {
         
         const profile = response.data;
         if (profile) {
-          // grade를 문자열로 변환 (CustomSelect 사용을 위해)
-          const edu = profile.education || { school: '', major: '', grade: '' };
-          if (edu.grade && typeof edu.grade === 'number') {
-            edu.grade = String(edu.grade);
+          // OpenAPI UserProfile 스펙에서 기존 형식으로 변환
+          if (profile.university) {
+            setEducation({
+              school: profile.university.universityName || '',
+              major: profile.university.major || '',
+              grade: profile.university.grade ? String(profile.university.grade) : ''
+            });
           }
-          setEducation(edu);
-          setCareerGoal(profile.careerGoal || '');
-          setSkills(profile.skillFit || []);
-          setExperiences(profile.experienceFit || []);
-          setEvidence(profile.evidenceFit || { certifications: [] });
+          
+          // interestDomains의 첫 번째 항목을 careerGoal로 사용
+          setCareerGoal(profile.interestDomains && profile.interestDomains.length > 0 
+            ? profile.interestDomains[0] 
+            : '');
+          
+          // techStack을 skills 형식으로 변환
+          if (profile.techStack) {
+            setSkills(profile.techStack.map(skill => ({
+              name: skill.name,
+              level: skill.level === 'ADVANCED' ? '상' :
+                     skill.level === 'INTERMEDIATE' ? '중' :
+                     skill.level === 'EXPERT' ? '상' : '하'
+            })));
+          }
+          
+          // experiences를 기존 형식으로 변환
+          if (profile.experiences) {
+            setExperiences(profile.experiences.map(exp => ({
+              type: exp.type,
+              role: exp.role,
+              period: exp.startDate && exp.endDate 
+                ? `${exp.startDate} ~ ${exp.endDate}`
+                : exp.startDate || '',
+              techStack: exp.techStack ? exp.techStack.join(', ') : ''
+            })));
+          }
+          
+          // certifications을 기존 형식으로 변환
+          if (profile.certifications) {
+            setEvidence({
+              certifications: profile.certifications.map(cert => cert.name)
+            });
+          }
         }
       } catch (error) {
         console.error("마이페이지 프로필 로드 실패:", error);
@@ -86,26 +118,45 @@ function MyPage() {
   const handleAddCert = () => { if (currentCert) { setEvidence({ ...evidence, certifications: [...evidence.certifications, currentCert] }); setCurrentCert(''); } };
   const handleRemoveCert = (index) => { setEvidence({ ...evidence, certifications: evidence.certifications.filter((_, i) => i !== index) }); };
 
-  // apiClient를 사용하는 handleSave
+  // apiClient를 사용하는 handleSave (OpenAPI 스펙에 맞게 변환)
   const handleSave = async () => {
     setIsSaving(true);
-    // experienceFit에서 url 필드 제거 (API 명세에 맞게)
-    const profileData = { 
-      education, 
-      careerGoal, 
-      skillFit: skills, 
-      experienceFit: experiences.map(exp => ({
-        type: exp.type,
-        role: exp.role,
-        period: exp.period,
-        techStack: exp.techStack
-      })), 
-      evidenceFit: evidence 
-    };
 
     try {
       const userId = getUserIdFromStorage();
       if (!userId) throw new Error("인증 정보가 없습니다.");
+
+      // OpenAPI UserProfileUpsert 스펙에 맞게 데이터 변환
+      const profileData = {
+        university: {
+          universityName: education.school || undefined,
+          major: education.major || undefined,
+          grade: education.grade ? parseInt(education.grade) : undefined
+        },
+        interestDomains: careerGoal ? [careerGoal] : [],
+        techStack: skills.map(skill => ({
+          name: skill.name,
+          level: skill.level === '상' ? 'ADVANCED' : 
+                 skill.level === '중' ? 'INTERMEDIATE' : 'BEGINNER'
+        })),
+        experiences: experiences.map(exp => {
+          // period를 startDate/endDate로 파싱
+          const periodParts = exp.period.split('~').map(s => s.trim());
+          const startDate = periodParts[0] || undefined;
+          const endDate = periodParts[1] || undefined;
+          
+          return {
+            type: exp.type === 'PROJECT' ? 'PROJECT' : 'INTERNSHIP',
+            role: exp.role,
+            startDate: startDate,
+            endDate: endDate,
+            techStack: exp.techStack ? exp.techStack.split(',').map(t => t.trim()) : []
+          };
+        }),
+        certifications: evidence.certifications.map(cert => ({
+          name: cert
+        }))
+      };
 
       // apiClient 사용 (헤더 자동 주입)
       await apiClient.put(
