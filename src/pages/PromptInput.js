@@ -23,8 +23,10 @@ function PromptInput() {
     { role: 'ai', content: '안녕하세요! AI 멘토입니다. 진로 설계에 대해 무엇이든 물어보세요.' }
   ]);
 
-  const [chatHistory, setChatHistory] = useState([]);
-  const [activeChatId, setActiveChatId] = useState(null);
+  const [chatHistory, setChatHistory] = useState([]);
+  const [activeChatId, setActiveChatId] = useState(null);
+  const [editingChatId, setEditingChatId] = useState(null);
+  const [editingTitle, setEditingTitle] = useState('');
 
   const messagesEndRef = useRef(null);
   const prevMessagesLength = useRef(0); // 스크롤 로직을 위한 ref
@@ -121,14 +123,47 @@ function PromptInput() {
     }
   };
   
-  const handleNewChat = () => {
-    const newId = (chatHistory.length > 0 ? Math.max(...chatHistory.map(c => c.id)) : 0) + 1;
-    setChatHistory(prev => [...prev, { id: newId, title: '새 채팅' }]);
-    setActiveChatId(newId);
-    setMessages([
-      { role: 'ai', content: '새 채팅을 시작합니다. 무엇을 도와드릴까요?' }
-    ]);
-  };
+  const handleNewChat = () => {
+    const newId = (chatHistory.length > 0 ? Math.max(...chatHistory.map(c => c.id)) : 0) + 1;
+    setChatHistory(prev => [...prev, { id: newId, title: '새 채팅' }]);
+    setActiveChatId(newId);
+    setEditingChatId(newId); // 새 채팅 생성 시 즉시 편집 모드
+    setEditingTitle('새 채팅');
+    setMessages([
+      { role: 'ai', content: '새 채팅을 시작합니다. 무엇을 도와드릴까요?' }
+    ]);
+  };
+
+  const handleStartEdit = (chatId, currentTitle) => {
+    setEditingChatId(chatId);
+    setEditingTitle(currentTitle);
+  };
+
+  const handleSaveEdit = (chatId) => {
+    if (editingTitle.trim()) {
+      setChatHistory(prev =>
+        prev.map(chat =>
+          chat.id === chatId ? { ...chat, title: editingTitle.trim() } : chat
+        )
+      );
+    }
+    setEditingChatId(null);
+    setEditingTitle('');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingChatId(null);
+    setEditingTitle('');
+  };
+
+  const handleKeyDown = (e, chatId) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSaveEdit(chatId);
+    } else if (e.key === 'Escape') {
+      handleCancelEdit();
+    }
+  };
 
   return (
     <div className={styles.chatPageContainer}>
@@ -139,17 +174,35 @@ function PromptInput() {
           <button className={styles.newChatBtn} onClick={handleNewChat}>
             + 새 채팅
           </button>
-          <ul className={styles.chatHistoryList}>
-            {chatHistory.map(chat => (
-              <li 
-                key={chat.id} 
-                className={chat.id === activeChatId ? styles.active : ''}
-                onClick={() => setActiveChatId(chat.id)}
-              >
-                {chat.title}
-              </li>
-            ))}
-          </ul>
+          <ul className={styles.chatHistoryList}>
+            {chatHistory.map(chat => (
+              <li 
+                key={chat.id} 
+                className={chat.id === activeChatId ? styles.active : ''}
+                onClick={() => {
+                  if (editingChatId !== chat.id) {
+                    setActiveChatId(chat.id);
+                  }
+                }}
+                onDoubleClick={() => handleStartEdit(chat.id, chat.title)}
+              >
+                {editingChatId === chat.id ? (
+                  <input
+                    type="text"
+                    value={editingTitle}
+                    onChange={(e) => setEditingTitle(e.target.value)}
+                    onBlur={() => handleSaveEdit(chat.id)}
+                    onKeyDown={(e) => handleKeyDown(e, chat.id)}
+                    onClick={(e) => e.stopPropagation()}
+                    className={styles.chatTitleInput}
+                    autoFocus
+                  />
+                ) : (
+                  <span>{chat.title}</span>
+                )}
+              </li>
+            ))}
+          </ul>
         </div>
         
         {/* 2. 메인 채팅창 */}
