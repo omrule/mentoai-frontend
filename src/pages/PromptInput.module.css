@@ -85,7 +85,7 @@
 .chatMessagesArea {
   flex-grow: 1;
   overflow-y: auto;
-  padding: 16px 24px 0 24px; /* 위아래 여백 줄임 */
+  padding: 0 24px 8px 24px; /* 위아래 여백 최소화 */
   display: flex;
   flex-direction: column;
   gap: 16px; /* 간격 줄임 */
@@ -263,8 +263,8 @@
 
 .sendIcon {
   fill: white;
-  width: 20px; /* Gemini 스타일 크기 */
-  height: 20px; /* Gemini 스타일 크기 */
+  width: 24px; /* 더 크게 */
+  height: 24px; /* 더 크게 */
 }
 .chatSendButton:disabled .sendIcon {
   fill: #adb5bd; 
