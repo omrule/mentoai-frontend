@@ -10,7 +10,7 @@ function ScheduleCalendar() {
     // [수정] 식별을 위해 unique id 추가 (실제로는 DB PK 사용)
     { id: 1, date: '2025-10-18', title: 'AI 데이터 분석 공모전 마감' },
     { id: 2, date: '2025-10-25', title: '빅데이터 경진대회 설명회' },
-    { id: 3, date: '2025-11-20', title: 'Kaggle 스터디 첫 모임' },
+    // Kaggle 스터디 이벤트 제거
   ]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);

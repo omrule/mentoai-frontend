@@ -19,6 +19,10 @@
   z-index: 100;
 }
 
+.navbar > * {
+  flex: 0 0 auto; /* 각 요소가 자동 크기 */
+}
+
 /* [수정] NavLink(a태그) 자체에 스타일 적용 */
 .navbar-logo {
   font-size: 24px;
@@ -26,6 +30,7 @@
   color: white; /* 👈 [추가] 색상 직접 지정 */
   text-decoration: none; /* 👈 [추가] 밑줄 제거 */
   flex-shrink: 0; /* 로고 크기 고정 */
+  margin-right: auto; /* 왼쪽에 고정 */
 }
 
 .navbar-menu {
@@ -35,11 +40,11 @@
   display: flex;
   flex-direction: row;
   gap: 15px;
-  position: absolute; /* 절대 위치로 중앙 배치 */
-  left: 50%;
-  transform: translateX(-50%); /* 정확한 중앙 정렬 */
+  position: static; /* absolute 제거, flex 레이아웃 사용 */
   white-space: nowrap; /* 한 줄로 표시 */
   flex-wrap: nowrap; /* 줄바꿈 방지 */
+  flex: 1; /* 남은 공간 차지 */
+  justify-content: center; /* 중앙 정렬 */
 }
 
 .navbar-menu li {
@@ -83,6 +88,7 @@
   cursor: pointer;
   transition: all 0.2s;
   flex-shrink: 0; /* 로그아웃 버튼 크기 고정 */
+  margin-left: auto; /* 오른쪽에 고정 */
 }
 
 .logout-button:hover {
