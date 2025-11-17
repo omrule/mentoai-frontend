@@ -31,6 +31,7 @@
   position: sticky;
   top: 60px;
   left: 0;
+  align-self: flex-start;
 }
 .newChatBtn {
   width: 100%; /* 전체 너비 사용 */
@@ -51,6 +52,7 @@
 }
 .newChatBtn:hover {
   background-color: #e8eaed;
+  border-radius: 12px;
 }
 .chatHistoryList {
   list-style: none;
