@@ -11,32 +11,40 @@ function AuthPage() {
   const [isChecking, setIsChecking] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
-  // 1) 로그인 상태 확인 (/auth/me)
+  // 1) 로그인 상태 확인 (sessionStorage만 확인, API 호출 없음)
   useEffect(() => {
-    const checkLoginStatus = async () => {
+    const checkLoginStatus = () => {
       try {
-        const accessToken = localStorage.getItem('accessToken');
+        // sessionStorage에서 인증 정보 확인
+        const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
+        const accessToken = storedUser?.tokens?.accessToken;
+        
+        // 토큰이 없으면 로그인 화면 표시
         if (!accessToken) {
-            throw new Error("No access token found in localStorage");
+          setIsChecking(false);
+          return;
         }
         
-        const response = await apiClient.get('/auth/me'); 
-        const data = response.data;
-        const user = data?.user;
-
+        // 토큰이 있으면 사용자 정보 확인
+        const user = storedUser?.user;
         if (user) {
-          sessionStorage.setItem('mentoUser', JSON.stringify(data));
-          const profileComplete = data.profileComplete;  // 변경된 부분
+          // 이미 로그인된 상태이므로 적절한 페이지로 리다이렉트
+          const profileComplete = user.profileComplete || false;
           const destination = profileComplete ? '/recommend' : '/profile-setup';
           navigate(destination, { replace: true });
           return;
         }
+        
+        // 토큰은 있지만 사용자 정보가 없는 경우는 OAuthCallback에서 처리 중일 수 있음
+        // 로그인 화면을 표시하지 않고 잠시 대기
+        setIsChecking(false);
       } catch (error) {
-        console.error('GET /auth/me failed (Not logged in):', error.message);
-      } finally {
+        // sessionStorage 파싱 실패 등 오류 시 로그인 화면 표시
+        console.error('로그인 상태 확인 실패:', error);
         setIsChecking(false);
       }
     };
+    
     checkLoginStatus();
   }, [navigate]);
 
