@@ -24,6 +24,11 @@ function AuthPage() {
         const data = response.data;
         const user = data?.user;
 
+        console.log("Login response:", {
+        data,
+        profileComplete: data?.profileComplete,
+        });
+
         if (user) {
           sessionStorage.setItem('mentoUser', JSON.stringify(data));
           const profileComplete = data.profileComplete;  // 변경된 부분
