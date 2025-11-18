@@ -62,15 +62,15 @@ function ActivityRecommender() {
   // [신규] 페이지 로드 시 활동 목록과 점수를 가져오는 로직
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const userId = getUserIdFromStorage();
-        if (!userId) {
-          console.warn('[ActivityRecommender] userId가 없습니다.');
-          setIsLoading(false);
-          return;
-        }
+      const userId = getUserIdFromStorage();
+      if (!userId) {
+        console.warn('[ActivityRecommender] userId가 없습니다.');
+        setIsLoading(false);
+        return;
+      }
 
-        // 1. 활동 목록 가져오기
+      // 1. 활동 목록 가져오기 (독립적으로 처리 - 실패해도 점수 계산은 계속)
+      try {
         console.log('[ActivityRecommender] ===== 활동 목록 조회 시작 =====');
         const activitiesResponse = await apiClient.get('/activities', {
           params: {
@@ -84,13 +84,20 @@ function ActivityRecommender() {
         
         if (activitiesResponse.data && activitiesResponse.data.items) {
           setActivities(activitiesResponse.data.items);
-          // 첫 번째 활동을 기본 선택
           if (activitiesResponse.data.items.length > 0) {
             setActiveTab(activitiesResponse.data.items[0].activityId);
           }
         }
+      } catch (activitiesError) {
+        console.error('[ActivityRecommender] 활동 목록 조회 실패:', activitiesError);
+        console.error('[ActivityRecommender] 에러 응답:', activitiesError.response?.data);
+        console.error('[ActivityRecommender] 에러 상태:', activitiesError.response?.status);
+        // 활동 목록 실패해도 점수 계산은 계속 진행
+        setActivities([]);
+      }
 
-        // 2. 목표 직무 가져오기
+      // 2. 목표 직무 가져오기 및 점수 계산 (독립적으로 처리)
+      try {
         const careerGoal = await getCareerGoalFromStorage(userId);
         if (!careerGoal) {
           console.log('[ActivityRecommender] 목표 직무가 없어 점수 계산을 건너뜁니다.');
@@ -128,7 +135,7 @@ function ActivityRecommender() {
           setRoleFitData(roleFitResponse.data);
         }
 
-        // 4. 개선 제안 가져오기 (roleId가 필요한데, careerGoal을 roleId로 사용)
+        // 4. 개선 제안 가져오기
         if (roleFitResponse.data?.target) {
           console.log('[ActivityRecommender] ===== 개선 제안 조회 시작 =====');
           console.log('[ActivityRecommender] GET /users/{userId}/improvements');
@@ -154,23 +161,17 @@ function ActivityRecommender() {
             }
           } catch (improvementsError) {
             console.error('[ActivityRecommender] 개선 제안 조회 실패:', improvementsError);
+            console.error('[ActivityRecommender] 개선 제안 에러 응답:', improvementsError.response?.data);
           }
         }
-
-      } catch (error) {
-        console.error('[ActivityRecommender] ===== API 호출 실패 =====');
-        console.error('[ActivityRecommender] 에러 객체:', error);
-        console.error('[ActivityRecommender] 에러 메시지:', error.message);
-        console.error('[ActivityRecommender] 에러 응답:', error.response);
-        if (error.response) {
-          console.error('[ActivityRecommender] 에러 응답 데이터:', error.response.data);
-          console.error('[ActivityRecommender] 에러 응답 상태:', error.response.status);
-        }
-        // 에러 시 빈 배열로 설정
-        setActivities([]);
-      } finally {
-        setIsLoading(false);
+      } catch (roleFitError) {
+        console.error('[ActivityRecommender] RoleFitScore 계산 실패:', roleFitError);
+        console.error('[ActivityRecommender] 에러 응답:', roleFitError.response?.data);
+        console.error('[ActivityRecommender] 에러 상태:', roleFitError.response?.status);
+        // 점수 계산 실패해도 활동 목록은 표시
       }
+
+      setIsLoading(false);
     };
 
     fetchData();
