@@ -30,7 +30,7 @@ function AuthPage() {
         console.log('[Auth.js] GET /auth/me - Full response:', response);
         console.log('[Auth.js] GET /auth/me - response.data:', response.data);
         console.log('[Auth.js] GET /auth/me - response.data.user:', response.data?.user);
-        console.log('[Auth.js] GET /auth/me - profileComplete:', response.data?.user?.profileComplete);
+        console.log('[Auth.js] GET /auth/me - profileComplete:', response.data?.profileComplete);
         const data = response.data;
         const user = data?.user;
 
@@ -45,7 +45,7 @@ function AuthPage() {
 
         if (user) {
           // 이미 로그인된 상태이므로 적절한 페이지로 리다이렉트
-          const profileComplete = user.profileComplete || false;
+          const profileComplete = data.profileComplete || false;
           const destination = profileComplete ? '/recommend' : '/profile-setup';
           navigate(destination, { replace: true });
           return;

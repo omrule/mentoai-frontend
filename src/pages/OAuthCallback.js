@@ -41,7 +41,7 @@ export default function OAuthCallback() {
         console.log('[OAuthCallback.js] GET /auth/me - Full response:', meResponse);
         console.log('[OAuthCallback.js] GET /auth/me - response.data:', meResponse.data);
         console.log('[OAuthCallback.js] GET /auth/me - response.data.user:', meResponse.data?.user);
-        console.log('[OAuthCallback.js] GET /auth/me - profileComplete:', meResponse.data?.user?.profileComplete); 
+        console.log('[OAuthCallback.js] GET /auth/me - profileComplete:', meResponse.data?.profileComplete); 
         
         // 5) [!!!] [수정] 덮어쓰지 않고, 기존 tokens와 새 user 정보를 합칩니다.
         const finalAuthData = {
@@ -53,7 +53,7 @@ export default function OAuthCallback() {
         sessionStorage.setItem('mentoUser', JSON.stringify(finalAuthData));
 
         // 7) 프로필 완성 여부에 따라 최종 목적지로 이동
-        const profileComplete = meResponse.data.user?.profileComplete;
+        const profileComplete = meResponse.data?.profileComplete;
         const destination = profileComplete ? '/recommend' : '/profile-setup';
         
         // App.js가 새 정보를 읽도록 새로고침
