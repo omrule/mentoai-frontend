@@ -43,85 +43,111 @@ function PromptInput() {
     prevMessagesLength.current = messages.length;
   }, [messages]);
 
-  const handleRecommend = async () => {
-    if (isLoading || !prompt.trim()) return;
+  const handleRecommend = async () => {
+    if (isLoading || !prompt.trim()) return;
 
-    const guardrailResult = checkGuardrails(prompt);
-    if (!guardrailResult.isSafe) {
-      alert(guardrailResult.message);
-      return;
-    }
+    const guardrailResult = checkGuardrails(prompt);
+    if (!guardrailResult.isSafe) {
+      alert(guardrailResult.message);
+      return;
+    }
 
-    setMessages(prev => [...prev, { role: 'user', content: prompt }]);
-    const currentPrompt = prompt;
-    setPrompt(''); 
-    setIsLoading(true);
+    setMessages(prev => [...prev, { role: 'user', content: prompt }]);
+    const currentPrompt = prompt;
+    setPrompt(''); 
+    setIsLoading(true);
 
-    // '새 채팅'인 경우, 첫 메시지를 채팅방 제목으로 설정
-    const activeChat = chatHistory.find(chat => chat.id === activeChatId);
-    if (activeChat && activeChat.title === '새 채팅') {
-      const newTitle = currentPrompt.length > 20 ? currentPrompt.substring(0, 20) + '...' : currentPrompt;
-      
-      setChatHistory(prevHistory => 
-        prevHistory.map(chat => 
-          chat.id === activeChatId ? { ...chat, title: newTitle } : chat
-        )
-      );
-    }
+    // activeChatId가 없으면 새 채팅 생성
+    let sessionId = activeChatId;
+    if (!sessionId) {
+      const newId = (chatHistory.length > 0 ? Math.max(...chatHistory.map(c => c.id)) : 0) + 1;
+      setChatHistory(prev => [...prev, { id: newId, title: '새 채팅' }]);
+      setActiveChatId(newId);
+      sessionId = newId;
+    }
 
-    try {
-      const userId = getUserIdFromStorage();
-      if (!userId) {
-        throw new Error("사용자 ID를 찾을 수 없습니다. (sessionStorage)");
-      }
+    // '새 채팅'인 경우, 첫 메시지를 채팅방 제목으로 설정
+    const activeChat = chatHistory.find(chat => chat.id === sessionId);
+    const chatTitle = activeChat?.title === '새 채팅' 
+      ? (currentPrompt.length > 20 ? currentPrompt.substring(0, 20) + '...' : currentPrompt)
+      : (activeChat?.title || 'New Chat');
+    
+    if (activeChat && activeChat.title === '새 채팅') {
+      setChatHistory(prevHistory => 
+        prevHistory.map(chat => 
+          chat.id === sessionId ? { ...chat, title: chatTitle } : chat
+        )
+      );
+    }
 
-      const requestBody = {
-        userId: userId,
-        query: currentPrompt,
-        useProfileHints: true 
-      };
+    try {
+      const userId = getUserIdFromStorage();
+      if (!userId) {
+        throw new Error("사용자 ID를 찾을 수 없습니다. (sessionStorage)");
+      }
 
-      const response = await apiClient.post('/recommend', requestBody);
+      // 현재 메시지들을 API 형식으로 변환
+      const messagesForApi = messages.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+      // 사용자 메시지 추가
+      messagesForApi.push({
+        role: 'user',
+        content: currentPrompt
+      });
 
-      if (response.data && response.data.items && response.data.items.length > 0) {
-        
-        const aiResponses = response.data.items.map(item => {
-          let tags = [];
-          if (item.activity.tags && item.activity.tags.length > 0) {
-            if (typeof item.activity.tags[0] === 'string') {
-              tags = item.activity.tags;
-            } else if (typeof item.activity.tags[0] === 'object' && item.activity.tags[0].tagName) {
-              tags = item.activity.tags.map(tag => tag.tagName);
-            }
-          }
+      const requestBody = {
+        sessionId: sessionId,
+        userId: userId,
+        title: chatTitle,
+        messages: messagesForApi,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
 
-          return {
-            role: 'ai',
-            content: item.reason || item.activity.summary,
-            title: item.activity.title,
-            tags: tags
-          };
-        });
-        
-        setMessages(prev => [...prev, ...aiResponses]);
+      const response = await apiClient.post(`/chat/sessions/${sessionId}/messages`, requestBody);
 
-      } else {
-        setMessages(prev => [
-          ...prev, 
-          { role: 'ai', content: '관련 활동을 찾지 못했습니다. 질문을 조금 더 구체적으로 해주시겠어요?' }
-        ]);
-      }
+      // 응답 처리 (백엔드 응답 구조에 따라 조정 필요)
+      if (response.data && response.data.items && response.data.items.length > 0) {
+        
+        const aiResponses = response.data.items.map(item => {
+          let tags = [];
+          if (item.activity.tags && item.activity.tags.length > 0) {
+            if (typeof item.activity.tags[0] === 'string') {
+              tags = item.activity.tags;
+            } else if (typeof item.activity.tags[0] === 'object' && item.activity.tags[0].tagName) {
+              tags = item.activity.tags.map(tag => tag.tagName);
+            }
+          }
 
-    } catch (error) {
-      console.error("AI 추천 API 호출 실패:", error);
-      setMessages(prev => [
-        ...prev, 
-        { role: 'ai', content: `오류가 발생했습니다: ${error.message}` }
-      ]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+          return {
+            role: 'ai',
+            content: item.reason || item.activity.summary,
+            title: item.activity.title,
+            tags: tags
+          };
+        });
+        
+        setMessages(prev => [...prev, ...aiResponses]);
+
+      } else {
+        setMessages(prev => [
+          ...prev, 
+          { role: 'ai', content: '관련 활동을 찾지 못했습니다. 질문을 조금 더 구체적으로 해주시겠어요?' }
+        ]);
+      }
+
+    } catch (error) {
+      console.error("채팅 메시지 전송 실패:", error);
+      setMessages(prev => [
+        ...prev, 
+        { role: 'ai', content: `오류가 발생했습니다: ${error.message}` }
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   const handleNewChat = () => {
     const newId = (chatHistory.length > 0 ? Math.max(...chatHistory.map(c => c.id)) : 0) + 1;
