@@ -11,9 +11,9 @@ function AuthPage() {
   const [isChecking, setIsChecking] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
-  // 1) 로그인 상태 확인 (sessionStorage만 확인, API 호출 없음)
+  // 1) 로그인 상태 확인 (토큰이 있으면 /auth/me 호출하여 최신 사용자 정보 확인)
   useEffect(() => {
-    const checkLoginStatus = () => {
+    const checkLoginStatus = async () => {
       try {
         // sessionStorage에서 인증 정보 확인
         const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
@@ -25,8 +25,20 @@ function AuthPage() {
           return;
         }
         
-        // 토큰이 있으면 사용자 정보 확인
-        const user = storedUser?.user;
+        // 토큰이 있으면 /auth/me 호출하여 최신 사용자 정보 가져오기
+        const response = await apiClient.get('/auth/me'); 
+        const data = response.data;
+        const user = data?.user;
+
+        // 사용자 정보를 sessionStorage에 업데이트
+        if (data) {
+          const updatedAuthData = {
+            tokens: storedUser.tokens,  // 기존 토큰 유지
+            user: data.user             // 최신 사용자 정보로 업데이트
+          };
+          sessionStorage.setItem('mentoUser', JSON.stringify(updatedAuthData));
+        }
+
         if (user) {
           // 이미 로그인된 상태이므로 적절한 페이지로 리다이렉트
           const profileComplete = user.profileComplete || false;
@@ -35,12 +47,11 @@ function AuthPage() {
           return;
         }
         
-        // 토큰은 있지만 사용자 정보가 없는 경우는 OAuthCallback에서 처리 중일 수 있음
-        // 로그인 화면을 표시하지 않고 잠시 대기
+        // 사용자 정보가 없는 경우 로그인 화면 표시
         setIsChecking(false);
       } catch (error) {
-        // sessionStorage 파싱 실패 등 오류 시 로그인 화면 표시
-        console.error('로그인 상태 확인 실패:', error);
+        // API 호출 실패 시 (토큰 만료 등) 로그인 화면 표시
+        console.error('로그인 상태 확인 실패:', error.message);
         setIsChecking(false);
       }
     };
