@@ -39,7 +39,10 @@ function AuthPage() {
       } catch (error) {
         console.error('GET /auth/me failed (Not logged in):', error.message);
       } finally {
-        console.log("finally");
+        console.log("Login response:", {
+        data,
+        profileComplete: data?.profileComplete,
+        });
         setIsChecking(false);
       }
     };
