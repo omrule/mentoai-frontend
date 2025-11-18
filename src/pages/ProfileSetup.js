@@ -98,11 +98,20 @@ function ProfileSetup() {
         }))
       };
 
+      console.log('[ProfileSetup] ===== 프로필 저장 시작 =====');
+      console.log('[ProfileSetup] [요청 시작] PUT /users/{userId}/profile');
+      console.log('[ProfileSetup] 요청 URL:', `${apiClient.defaults.baseURL}/users/${userId}/profile`);
+      console.log('[ProfileSetup] 요청 본문 (profileData):', profileData);
+
       // apiClient.put 사용
-      await apiClient.put(
+      const profileResponse = await apiClient.put(
         `/users/${userId}/profile`, 
         profileData
       );
+
+      console.log('[ProfileSetup] [프로필 저장 성공] ✅');
+      console.log('[ProfileSetup] 응답 상태 코드:', profileResponse.status);
+      console.log('[ProfileSetup] 응답 데이터:', profileResponse.data);
       
       // sessionStorage의 profileComplete 상태 수동 업데이트
       const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
@@ -114,6 +123,51 @@ function ProfileSetup() {
         }
         sessionStorage.setItem('mentoUser', JSON.stringify(storedUser));
       }
+
+      // RoleFitScore 계산 요청
+      if (careerGoal) {
+        console.log('[ProfileSetup] ===== RoleFitScore 계산 시작 =====');
+        console.log('[ProfileSetup] POST /users/{userId}/role-fit');
+        console.log('[ProfileSetup] 요청 URL:', `${apiClient.defaults.baseURL}/users/${userId}/role-fit`);
+        console.log('[ProfileSetup] 목표 직무 (target):', careerGoal);
+        
+        const roleFitRequestBody = {
+          target: careerGoal,
+          topNImprovements: 5
+        };
+        
+        console.log('[ProfileSetup] 요청 본문 (roleFitRequestBody):', roleFitRequestBody);
+
+        try {
+          const roleFitResponse = await apiClient.post(
+            `/users/${userId}/role-fit`,
+            roleFitRequestBody
+          );
+
+          console.log('[ProfileSetup] [점수 계산 성공] ✅');
+          console.log('[ProfileSetup] 응답 상태 코드:', roleFitResponse.status);
+          console.log('[ProfileSetup] 전체 RoleFitResponse:', roleFitResponse.data);
+          console.log('[ProfileSetup] 🎯 계산된 RoleFitScore:', roleFitResponse.data?.roleFitScore);
+          console.log('[ProfileSetup] 📊 RoleFitScore Breakdown:', roleFitResponse.data?.breakdown);
+          
+          if (roleFitResponse.data?.breakdown) {
+            console.log('[ProfileSetup]    - SkillFit:', roleFitResponse.data.breakdown.skillFit);
+            console.log('[ProfileSetup]    - ExperienceFit:', roleFitResponse.data.breakdown.experienceFit);
+            console.log('[ProfileSetup]    - EducationFit:', roleFitResponse.data.breakdown.educationFit);
+            console.log('[ProfileSetup]    - EvidenceFit:', roleFitResponse.data.breakdown.evidenceFit);
+          }
+          console.log('[ProfileSetup] Missing Skills:', roleFitResponse.data?.missingSkills);
+          console.log('[ProfileSetup] Recommendations:', roleFitResponse.data?.recommendations);
+        } catch (roleFitError) {
+          console.error('[ProfileSetup] [점수 계산 실패] ❌');
+          console.error('[ProfileSetup] 에러:', roleFitError);
+          console.error('[ProfileSetup] 에러 응답:', roleFitError.response?.data);
+        }
+      } else {
+        console.log('[ProfileSetup] ⚠️ 목표 직무(careerGoal)가 없어 RoleFitScore 계산을 건너뜁니다.');
+      }
+
+      console.log('[ProfileSetup] ===== 프로필 저장 완료 =====');
       
       window.location.href = '/recommend';
 

@@ -37,9 +37,13 @@ function MyPage() {
   const [evidence, setEvidence] = useState({ certifications: [] });
   const [currentCert, setCurrentCert] = useState('');
   
-  const [isSaving, setIsSaving] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); 
-  const [showToast, setShowToast] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); 
+  const [showToast, setShowToast] = useState(false);
+  const [batchResults, setBatchResults] = useState([]);
+  const [simulationResult, setSimulationResult] = useState(null);
+  const [isCalculatingBatch, setIsCalculatingBatch] = useState(false);
+  const [isSimulating, setIsSimulating] = useState(false);
 
   // 페이지 로드 시 /profile API를 호출하여 기존 정보 로드
   useEffect(() => {
@@ -158,15 +162,69 @@ function MyPage() {
         }))
       };
 
+      console.log('[MyPage] ===== 프로필 저장 시작 =====');
+      console.log('[MyPage] [요청 시작] PUT /users/{userId}/profile');
+      console.log('[MyPage] 요청 URL:', `${apiClient.defaults.baseURL}/users/${userId}/profile`);
+      console.log('[MyPage] 요청 본문 (profileData):', profileData);
+
       // apiClient 사용 (헤더 자동 주입)
-      await apiClient.put(
+      const profileResponse = await apiClient.put(
         `/users/${userId}/profile`, 
         profileData
       );
+
+      console.log('[MyPage] [프로필 저장 성공] ✅');
+      console.log('[MyPage] 응답 상태 코드:', profileResponse.status);
+      console.log('[MyPage] 응답 데이터:', profileResponse.data);
+
+      // RoleFitScore 계산 요청
+      if (careerGoal) {
+        console.log('[MyPage] ===== RoleFitScore 계산 시작 =====');
+        console.log('[MyPage] POST /users/{userId}/role-fit');
+        console.log('[MyPage] 요청 URL:', `${apiClient.defaults.baseURL}/users/${userId}/role-fit`);
+        console.log('[MyPage] 목표 직무 (target):', careerGoal);
+        
+        const roleFitRequestBody = {
+          target: careerGoal,
+          topNImprovements: 5
+        };
+        
+        console.log('[MyPage] 요청 본문 (roleFitRequestBody):', roleFitRequestBody);
+
+        try {
+          const roleFitResponse = await apiClient.post(
+            `/users/${userId}/role-fit`,
+            roleFitRequestBody
+          );
+
+          console.log('[MyPage] [점수 계산 성공] ✅');
+          console.log('[MyPage] 응답 상태 코드:', roleFitResponse.status);
+          console.log('[MyPage] 전체 RoleFitResponse:', roleFitResponse.data);
+          console.log('[MyPage] 🎯 계산된 RoleFitScore:', roleFitResponse.data?.roleFitScore);
+          console.log('[MyPage] 📊 RoleFitScore Breakdown:', roleFitResponse.data?.breakdown);
+          
+          if (roleFitResponse.data?.breakdown) {
+            console.log('[MyPage]    - SkillFit:', roleFitResponse.data.breakdown.skillFit);
+            console.log('[MyPage]    - ExperienceFit:', roleFitResponse.data.breakdown.experienceFit);
+            console.log('[MyPage]    - EducationFit:', roleFitResponse.data.breakdown.educationFit);
+            console.log('[MyPage]    - EvidenceFit:', roleFitResponse.data.breakdown.evidenceFit);
+          }
+          console.log('[MyPage] Missing Skills:', roleFitResponse.data?.missingSkills);
+          console.log('[MyPage] Recommendations:', roleFitResponse.data?.recommendations);
+        } catch (roleFitError) {
+          console.error('[MyPage] [점수 계산 실패] ❌');
+          console.error('[MyPage] 에러:', roleFitError);
+          console.error('[MyPage] 에러 응답:', roleFitError.response?.data);
+        }
+      } else {
+        console.log('[MyPage] ⚠️ 목표 직무(careerGoal)가 없어 RoleFitScore 계산을 건너뜁니다.');
+      }
       
       // 토스트 메시지 표시
       setShowToast(true);
       setTimeout(() => setShowToast(false), 2000);
+
+      console.log('[MyPage] ===== 프로필 저장 완료 =====');
 
     } catch (error) {
       console.error("프로필 저장 실패:", error);
@@ -178,6 +236,113 @@ function MyPage() {
       }
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // 여러 직무에 대한 일괄 계산
+  const handleBatchRoleFit = async () => {
+    setIsCalculatingBatch(true);
+    try {
+      const userId = getUserIdFromStorage();
+      if (!userId) throw new Error("인증 정보가 없습니다.");
+
+      const targets = ['backend_entry', 'frontend_entry', 'data_analyst']; // 예시 직무 목록
+      
+      console.log('[MyPage] ===== 일괄 RoleFitScore 계산 시작 =====');
+      console.log('[MyPage] POST /users/{userId}/role-fit/batch');
+      console.log('[MyPage] 요청 URL:', `${apiClient.defaults.baseURL}/users/${userId}/role-fit/batch`);
+      console.log('[MyPage] 계산할 직무 목록 (targets):', targets);
+
+      const batchRequestBody = {
+        targets: targets,
+        topNImprovements: 5
+      };
+
+      console.log('[MyPage] 요청 본문 (batchRequestBody):', batchRequestBody);
+
+      const batchResponse = await apiClient.post(
+        `/users/${userId}/role-fit/batch`,
+        batchRequestBody
+      );
+
+      console.log('[MyPage] [일괄 계산 성공] ✅');
+      console.log('[MyPage] 응답 상태 코드:', batchResponse.status);
+      console.log('[MyPage] 전체 일괄 계산 결과:', batchResponse.data);
+      console.log('[MyPage] 계산된 직무 개수:', batchResponse.data?.length);
+
+      if (batchResponse.data) {
+        batchResponse.data.forEach((result, index) => {
+          console.log(`[MyPage] 직무 ${index + 1} (${result.target}):`);
+          console.log(`[MyPage]   - RoleFitScore: ${result.roleFitScore}`);
+          console.log(`[MyPage]   - Breakdown:`, result.breakdown);
+        });
+        setBatchResults(batchResponse.data);
+      }
+    } catch (error) {
+      console.error('[MyPage] [일괄 계산 실패] ❌');
+      console.error('[MyPage] 에러 객체:', error);
+      console.error('[MyPage] 에러 메시지:', error.message);
+      console.error('[MyPage] 에러 응답:', error.response?.data);
+      alert('일괄 계산에 실패했습니다: ' + (error.message || '알 수 없는 오류'));
+    } finally {
+      setIsCalculatingBatch(false);
+    }
+  };
+
+  // 시뮬레이션 (예: AWS 스킬 추가 시 점수 변화)
+  const handleSimulateRoleFit = async () => {
+    setIsSimulating(true);
+    try {
+      const userId = getUserIdFromStorage();
+      if (!userId) throw new Error("인증 정보가 없습니다.");
+
+      if (!careerGoal) {
+        alert('목표 직무를 먼저 설정해주세요.');
+        return;
+      }
+
+      console.log('[MyPage] ===== RoleFitScore 시뮬레이션 시작 =====');
+      console.log('[MyPage] POST /users/{userId}/role-fit/simulate');
+      console.log('[MyPage] 요청 URL:', `${apiClient.defaults.baseURL}/users/${userId}/role-fit/simulate`);
+      console.log('[MyPage] 목표 직무 (target):', careerGoal);
+
+      // 예시: AWS 스킬 추가 시뮬레이션
+      const simulationRequestBody = {
+        target: careerGoal,
+        addSkills: [
+          { name: 'AWS', level: 'INTERMEDIATE' }
+        ],
+        addCertifications: [
+          { name: '정보처리기사' }
+        ]
+      };
+
+      console.log('[MyPage] 요청 본문 (simulationRequestBody):', simulationRequestBody);
+
+      const simulationResponse = await apiClient.post(
+        `/users/${userId}/role-fit/simulate`,
+        simulationRequestBody
+      );
+
+      console.log('[MyPage] [시뮬레이션 성공] ✅');
+      console.log('[MyPage] 응답 상태 코드:', simulationResponse.status);
+      console.log('[MyPage] 전체 시뮬레이션 결과:', simulationResponse.data);
+      console.log('[MyPage] 현재 점수 (baseScore):', simulationResponse.data?.baseScore);
+      console.log('[MyPage] 예상 점수 (newScore):', simulationResponse.data?.newScore);
+      console.log('[MyPage] 점수 변화 (delta):', simulationResponse.data?.delta);
+      console.log('[MyPage] Breakdown 변화:', simulationResponse.data?.breakdownDelta);
+
+      if (simulationResponse.data) {
+        setSimulationResult(simulationResponse.data);
+      }
+    } catch (error) {
+      console.error('[MyPage] [시뮬레이션 실패] ❌');
+      console.error('[MyPage] 에러 객체:', error);
+      console.error('[MyPage] 에러 메시지:', error.message);
+      console.error('[MyPage] 에러 응답:', error.response?.data);
+      alert('시뮬레이션에 실패했습니다: ' + (error.message || '알 수 없는 오류'));
+    } finally {
+      setIsSimulating(false);
     }
   };
 
@@ -311,6 +476,65 @@ function MyPage() {
         <button onClick={handleSave} className="submit-button" disabled={isSaving}>
           {isSaving ? '저장 중...' : '프로필 저장'}
         </button>
+
+        {/* 일괄 계산 및 시뮬레이션 섹션 */}
+        <div style={{ marginTop: '30px', padding: '20px', border: '1px solid #dee2e6', borderRadius: '8px' }}>
+          <h3 style={{ marginTop: '0' }}>📊 추가 기능</h3>
+          
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+            <button 
+              onClick={handleBatchRoleFit} 
+              disabled={isCalculatingBatch}
+              style={{ 
+                padding: '10px 20px', 
+                backgroundColor: '#007bff', 
+                color: 'white', 
+                border: 'none', 
+                borderRadius: '4px',
+                cursor: isCalculatingBatch ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {isCalculatingBatch ? '계산 중...' : '여러 직무 일괄 계산'}
+            </button>
+            
+            <button 
+              onClick={handleSimulateRoleFit} 
+              disabled={isSimulating || !careerGoal}
+              style={{ 
+                padding: '10px 20px', 
+                backgroundColor: '#28a745', 
+                color: 'white', 
+                border: 'none', 
+                borderRadius: '4px',
+                cursor: (isSimulating || !careerGoal) ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {isSimulating ? '시뮬레이션 중...' : '점수 변화 시뮬레이션'}
+            </button>
+          </div>
+
+          {batchResults.length > 0 && (
+            <div style={{ marginTop: '15px', padding: '10px', backgroundColor: '#f8f9fa', borderRadius: '4px' }}>
+              <h4>일괄 계산 결과:</h4>
+              {batchResults.map((result, idx) => (
+                <div key={idx} style={{ marginBottom: '10px' }}>
+                  <strong>{result.target}:</strong> {result.roleFitScore?.toFixed(1)}점
+                </div>
+              ))}
+            </div>
+          )}
+
+          {simulationResult && (
+            <div style={{ marginTop: '15px', padding: '10px', backgroundColor: '#e7f3ff', borderRadius: '4px' }}>
+              <h4>시뮬레이션 결과:</h4>
+              <div>현재 점수: {simulationResult.baseScore?.toFixed(1)}점</div>
+              <div>예상 점수: {simulationResult.newScore?.toFixed(1)}점</div>
+              <div style={{ color: simulationResult.delta > 0 ? '#28a745' : '#dc3545', fontWeight: 'bold' }}>
+                변화: {simulationResult.delta > 0 ? '+' : ''}{simulationResult.delta?.toFixed(1)}점
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {showToast && (
