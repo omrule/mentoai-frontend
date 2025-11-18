@@ -14,7 +14,7 @@ body {
   background-color: #ffffff;
   min-height: 100vh;
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: hidden;
 }
 
 /* [!!!] [수정] .App을 Flex 컨테이너로 변경
