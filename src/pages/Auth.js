@@ -36,9 +36,14 @@ function AuthPage() {
 
         // 사용자 정보를 sessionStorage에 업데이트
         if (data) {
+          // profileComplete 값을 user 객체에 복사 (백엔드 응답의 루트에 있음)
+          const userWithProfileComplete = {
+            ...data.user,
+            profileComplete: data.profileComplete
+          };
           const updatedAuthData = {
             tokens: storedUser.tokens,  // 기존 토큰 유지
-            user: data.user             // 최신 사용자 정보로 업데이트
+            user: userWithProfileComplete  // profileComplete가 포함된 사용자 정보로 업데이트
           };
           sessionStorage.setItem('mentoUser', JSON.stringify(updatedAuthData));
         }

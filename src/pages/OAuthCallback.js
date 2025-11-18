@@ -44,9 +44,14 @@ export default function OAuthCallback() {
         console.log('[OAuthCallback.js] GET /auth/me - profileComplete:', meResponse.data?.profileComplete); 
         
         // 5) [!!!] [수정] 덮어쓰지 않고, 기존 tokens와 새 user 정보를 합칩니다.
+        // profileComplete 값을 user 객체에 복사 (백엔드 응답의 루트에 있음)
+        const userWithProfileComplete = {
+          ...meResponse.data.user,
+          profileComplete: meResponse.data.profileComplete
+        };
         const finalAuthData = {
           tokens: tempAuthData.tokens,      // <-- 2단계에서 저장한 토큰
-          user: meResponse.data.user      // <-- 4단계에서 받은 사용자 정보
+          user: userWithProfileComplete     // <-- profileComplete가 포함된 사용자 정보
         };
         
         // 6) [!!!] 완전한 { user, tokens } 객체를 sessionStorage에 저장
