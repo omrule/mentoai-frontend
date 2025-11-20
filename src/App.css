@@ -36,8 +36,8 @@ body {
 }
 
 /* [!!!] [수정] .content 클래스 (헤더가 있는 페이지용)
-  - 'height'를 고정하고 여기서 스크롤을 담당합니다.
-  - 스크롤바가 화면 제일 오른쪽, Navbar 아래에서 시작합니다.
+  - 각 페이지가 자체적으로 스크롤을 관리합니다.
+  - 여기서는 스크롤을 관리하지 않습니다.
 */
 .content {
   margin-top: 60px; /* [수정] Navbar 아래로 이동 */
@@ -45,8 +45,7 @@ body {
   box-sizing: border-box;
   height: calc(100vh - 60px); /* [수정] Navbar 제외한 높이 */
   width: 100%;
-  overflow-y: auto; /* [수정] 여기서 스크롤 발생 (화면 오른쪽에) */
-  overflow-x: hidden;
+  overflow: hidden; /* [수정] 스크롤 제거 - 각 페이지가 관리 */
 }
 
 /* 채팅 페이지 전용 content 클래스 */

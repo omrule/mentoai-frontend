@@ -1,5 +1,14 @@
 /* src/pages/ScheduleCalendar.module.css */
 
+.calendarPageWrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+  height: 100%;
+  overflow: hidden; /* [추가] 캘린더는 스크롤 불필요 */
+  box-sizing: border-box;
+}
+
 .calendarContainer {
   background: #fff;
   padding: 25px;

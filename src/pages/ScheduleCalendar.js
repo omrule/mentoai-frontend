@@ -266,8 +266,8 @@ function ScheduleCalendar() {
   };
 
   return (
-    // [수정] className 적용 (page-container는 공통 스타일이므로 유지)
-    <div className="page-container">
+    // [수정] 캘린더는 스크롤 불필요하므로 별도 래퍼 사용
+    <div className={styles.calendarPageWrapper}>
       <div className={styles.calendarContainer}>
         {header()}
         {daysOfWeek()}

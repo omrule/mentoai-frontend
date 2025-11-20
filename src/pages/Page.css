@@ -16,8 +16,10 @@
 .page-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 40px 24px 80px; /* [수정] 상단 패딩 복원 */
-  min-height: calc(100vh - 60px); /* [수정] 최소 높이만 지정 */
+  padding: 40px 24px 80px;
+  height: 100%; /* [수정] 부모 높이 100% */
+  overflow-y: auto; /* [수정] 각 페이지 독립 스크롤 */
+  overflow-x: hidden;
   box-sizing: border-box;
 }
 .page-container h2 {
@@ -38,8 +40,10 @@
   width: 100%;
   padding: 20px 20px 40px;
   box-sizing: border-box;
-  background-color: #ffffff; 
-  min-height: calc(100vh - 60px); /* [수정] 최소 높이만 지정 */
+  background-color: #ffffff;
+  height: 100%; /* [수정] */
+  overflow-y: auto; /* [수정] 독립 스크롤 */
+  overflow-x: hidden;
 }
 
 .profile-card {
