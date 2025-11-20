@@ -7,41 +7,41 @@ import apiClient from '../api/apiClient';
 
 // sessionStorage에서 userId를 가져오는 헬퍼
 const getUserIdFromStorage = () => {
-  try {
-    const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
-    return storedUser ? storedUser.user.userId : null;
-  } catch (e) {
-    return null;
-  }
+  try {
+    const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
+    return storedUser ? storedUser.user.userId : null;
+  } catch (e) {
+    return null;
+  }
 };
 
 function PromptInput() {
-  const [prompt, setPrompt] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const [messages, setMessages] = useState([
-    { role: 'ai', content: '안녕하세요! AI 멘토입니다. 진로 설계에 대해 무엇이든 물어보세요.' }
-  ]);
+  const [prompt, setPrompt] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [messages, setMessages] = useState([
+    { role: 'ai', content: '안녕하세요! AI 멘토입니다. 진로 설계에 대해 무엇이든 물어보세요.' }
+  ]);
 
   const [chatHistory, setChatHistory] = useState([]);
   const [activeChatId, setActiveChatId] = useState(null);
   const [editingChatId, setEditingChatId] = useState(null);
   const [editingTitle, setEditingTitle] = useState('');
 
-  const messagesEndRef = useRef(null);
-  const prevMessagesLength = useRef(0); // 스크롤 로직을 위한 ref
+  const messagesEndRef = useRef(null);
+  const prevMessagesLength = useRef(0); // 스크롤 로직을 위한 ref
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   // 새 메시지가 "추가"될 때만 스크롤 실행
-  useEffect(() => {
-    if (messages.length > prevMessagesLength.current) {
-      scrollToBottom();
-    }
-    prevMessagesLength.current = messages.length;
-  }, [messages]);
+  useEffect(() => {
+    if (messages.length > prevMessagesLength.current) {
+      scrollToBottom();
+    }
+    prevMessagesLength.current = messages.length;
+  }, [messages]);
 
   const handleRecommend = async () => {
     if (isLoading || !prompt.trim()) return;
@@ -54,7 +54,7 @@ function PromptInput() {
 
     setMessages(prev => [...prev, { role: 'user', content: prompt }]);
     const currentPrompt = prompt;
-    setPrompt(''); 
+    setPrompt('');
     setIsLoading(true);
 
     console.log('[PromptInput] ===== API 요청 시작 =====');
@@ -64,9 +64,9 @@ function PromptInput() {
     const activeChat = chatHistory.find(chat => chat.id === activeChatId);
     if (activeChat && activeChat.title === '새 채팅') {
       const newTitle = currentPrompt.length > 20 ? currentPrompt.substring(0, 20) + '...' : currentPrompt;
-      
-      setChatHistory(prevHistory => 
-        prevHistory.map(chat => 
+
+      setChatHistory(prevHistory =>
+        prevHistory.map(chat =>
           chat.id === activeChatId ? { ...chat, title: newTitle } : chat
         )
       );
@@ -75,7 +75,7 @@ function PromptInput() {
     try {
       const userId = getUserIdFromStorage();
       console.log('[PromptInput] sessionStorage에서 가져온 userId:', userId);
-      
+
       if (!userId) {
         throw new Error("사용자 ID를 찾을 수 없습니다. (sessionStorage)");
       }
@@ -85,7 +85,7 @@ function PromptInput() {
         query: currentPrompt,
         topK: 5,
         preferTags: [], // 필요시 추출 가능
-        useProfileHints: true 
+        useProfileHints: true
       };
 
       console.log('[PromptInput] API 엔드포인트: POST /recommend');
@@ -103,7 +103,7 @@ function PromptInput() {
       if (response.data && response.data.items && response.data.items.length > 0) {
         console.log('[PromptInput] 추천된 활동 개수:', response.data.items.length);
         console.log('[PromptInput] 추천된 활동 목록:', response.data.items);
-        
+
         const aiResponses = response.data.items.map(item => {
           let tags = [];
           if (item.activity.tags && item.activity.tags.length > 0) {
@@ -120,11 +120,11 @@ function PromptInput() {
             title: item.activity.title,
             tags: tags
           };
-          
+
           console.log('[PromptInput] 처리된 AI 응답:', aiResponse);
           return aiResponse;
         });
-        
+
         console.log('[PromptInput] 모든 AI 응답 처리 완료:', aiResponses);
         setMessages(prev => [...prev, ...aiResponses]);
 
@@ -132,7 +132,7 @@ function PromptInput() {
         console.log('[PromptInput] 추천된 활동이 없습니다.');
         console.log('[PromptInput] 응답 데이터 구조:', response.data);
         setMessages(prev => [
-          ...prev, 
+          ...prev,
           { role: 'ai', content: '관련 활동을 찾지 못했습니다. 질문을 조금 더 구체적으로 해주시겠어요?' }
         ]);
       }
@@ -150,9 +150,9 @@ function PromptInput() {
         console.error('[PromptInput] 에러 응답 헤더:', error.response.headers);
       }
       console.error('[PromptInput] 에러 요청 설정:', error.config);
-      
+
       setMessages(prev => [
-        ...prev, 
+        ...prev,
         { role: 'ai', content: `오류가 발생했습니다: ${error.message}` }
       ]);
     } finally {
@@ -160,7 +160,7 @@ function PromptInput() {
       console.log('[PromptInput] 로딩 상태 종료');
     }
   };
-  
+
   const handleNewChat = () => {
     const newId = (chatHistory.length > 0 ? Math.max(...chatHistory.map(c => c.id)) : 0) + 1;
     setChatHistory(prev => [...prev, { id: newId, title: '새 채팅' }]);
@@ -203,19 +203,19 @@ function PromptInput() {
     }
   };
 
-  return (
-    <div className={styles.chatPageContainer}>
-      <div className={styles.chatLayout}>
-        
-        {/* 1. 채팅 히스토리 사이드바 */}
-        <div className={styles.chatHistorySidebar}>
+  return (
+    <div className={styles.chatPageContainer}>
+      <div className={styles.chatLayout}>
+
+        {/* 1. 채팅 히스토리 사이드바 */}
+        <div className={styles.chatHistorySidebar}>
           <button className={styles.newChatBtn} onClick={handleNewChat}>
             + 새 채팅
           </button>
           <ul className={styles.chatHistoryList}>
             {chatHistory.map(chat => (
-              <li 
-                key={chat.id} 
+              <li
+                key={chat.id}
                 className={chat.id === activeChatId ? styles.active : ''}
                 onClick={() => {
                   if (editingChatId !== chat.id) {
@@ -241,80 +241,80 @@ function PromptInput() {
               </li>
             ))}
           </ul>
-        </div>
-        
-        {/* 2. 메인 채팅창 */}
-        <div className={styles.chatWindow}>
-          
-          {/* 2-1. 메시지 출력 영역 */}
-          <div className={styles.chatMessagesArea}>
+        </div>
 
-            {messages.map((msg, index) => (
-              <div key={index} className={`${styles.chatMessage} ${styles[msg.role]}`}>
-                {msg.role === 'ai' && msg.title ? (
-                  <div className={styles.resultCardChat}>
-                    <h4>{msg.title}</h4>
-                    <p>{msg.content}</p>
-                    <div className={styles.tags}>
-                      {msg.tags?.map(tag => <span key={tag} className={styles.tag}>{tag}</span>)}
-                    </div>
-                  </div>
-                ) : (
-                  <p>{msg.content}</p>
-                )}
-              </div>
-            ))}
-            
-            {isLoading && (
-              <div className={`${styles.chatMessage} ${styles.ai}`}>
-                <div className={styles.spinnerDots}>
-                  <div className={styles.dot}></div>
-                  <div className={styles.dot}></div>
-                  <div className={styles.dot}></div>
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-          
-          {/* 2-2. 메시지 입력 영역 (Gemini 스타일) */}
-          <div className={styles.chatInputArea}>
-            <div className={styles.chatInputWrapper}>
-              <textarea
-                className={styles.chatTextarea}
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder="AI 멘토에게 질문을 입력하세요..."
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleRecommend();
-                  }
-                }}
-                rows={1}
-              />
-              <button 
-                className={styles.chatSendButton}
-                onClick={handleRecommend} 
-                disabled={isLoading || !prompt.trim()}
-              >
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                      viewBox="0 0 24 24" 
-                  width="24" 
-                  height="24" 
-                  className={styles.sendIcon}
-                >
-                  <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2 .01 7z"></path>
-                      </svg>
-              </button>
-            </div>
-          </div>
+        {/* 2. 메인 채팅창 */}
+        <div className={styles.chatWindow}>
 
-        </div>
-      </div>
-    </div>
-  );
+          {/* 2-1. 메시지 출력 영역 */}
+          <div className={styles.chatMessagesArea}>
+
+            {messages.map((msg, index) => (
+              <div key={index} className={`${styles.chatMessage} ${styles[msg.role]}`}>
+                {msg.role === 'ai' && msg.title ? (
+                  <div className={styles.resultCardChat}>
+                    <h4>{msg.title}</h4>
+                    <p>{msg.content}</p>
+                    <div className={styles.tags}>
+                      {msg.tags?.map(tag => <span key={tag} className={styles.tag}>{tag}</span>)}
+                    </div>
+                  </div>
+                ) : (
+                  <p>{msg.content}</p>
+                )}
+              </div>
+            ))}
+
+            {isLoading && (
+              <div className={`${styles.chatMessage} ${styles.ai}`}>
+                <div className={styles.spinnerDots}>
+                  <div className={styles.dot}></div>
+                  <div className={styles.dot}></div>
+                  <div className={styles.dot}></div>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* 2-2. 메시지 입력 영역 (Gemini 스타일) */}
+          <div className={styles.chatInputArea}>
+            <div className={styles.chatInputWrapper}>
+              <textarea
+                className={styles.chatTextarea}
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="AI 멘토에게 질문을 입력하세요..."
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleRecommend();
+                  }
+                }}
+                rows={1}
+              />
+              <button
+                className={styles.chatSendButton}
+                onClick={handleRecommend}
+                disabled={isLoading || !prompt.trim()}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  height="24"
+                  className={styles.sendIcon}
+                >
+                  <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2 .01 7z"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default PromptInput;

@@ -6,11 +6,11 @@ import apiClient from '../api/apiClient'; // apiClient 임포트
 import styles from './Auth.module.css';
 
 export default function OAuthCallback() {
-  const navigate = useNavigate();
+  const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('로그인 처리 중...');
 
-  useEffect(() => {
+  useEffect(() => {
     const completeLogin = async () => {
       try {
         // 1) URL 해시(#)에서 토큰 파싱
@@ -31,7 +31,7 @@ export default function OAuthCallback() {
           user: null
         };
         sessionStorage.setItem('mentoUser', JSON.stringify(tempAuthData));
-        
+
         // 3) URL에서 토큰 정보 제거 (보안)
         window.history.replaceState(null, '', window.location.pathname);
 
@@ -41,8 +41,8 @@ export default function OAuthCallback() {
         console.log('[OAuthCallback.js] GET /auth/me - Full response:', meResponse);
         console.log('[OAuthCallback.js] GET /auth/me - response.data:', meResponse.data);
         console.log('[OAuthCallback.js] GET /auth/me - response.data.user:', meResponse.data?.user);
-        console.log('[OAuthCallback.js] GET /auth/me - profileComplete:', meResponse.data?.profileComplete); 
-        
+        console.log('[OAuthCallback.js] GET /auth/me - profileComplete:', meResponse.data?.profileComplete);
+
         // 5) [!!!] [수정] 덮어쓰지 않고, 기존 tokens와 새 user 정보를 합칩니다.
         // profileComplete 값을 user 객체에 복사 (백엔드 응답의 루트에 있음)
         const userWithProfileComplete = {
@@ -53,17 +53,17 @@ export default function OAuthCallback() {
           tokens: tempAuthData.tokens,      // <-- 2단계에서 저장한 토큰
           user: userWithProfileComplete     // <-- profileComplete가 포함된 사용자 정보
         };
-        
+
         // 6) [!!!] 완전한 { user, tokens } 객체를 sessionStorage에 저장
         sessionStorage.setItem('mentoUser', JSON.stringify(finalAuthData));
 
         // 7) 프로필 완성 여부에 따라 최종 목적지로 이동
         const profileComplete = meResponse.data?.profileComplete;
         const destination = profileComplete ? '/recommend' : '/profile-setup';
-        
+
         // App.js가 새 정보를 읽도록 새로고침
         window.location.href = destination;
-      
+
       } catch (err) {
         console.error('OAuth 콜백 처리 중 오류:', err);
         setError(`로그인에 실패했습니다: ${err.message}. 잠시 후 다시 시도하세요.`);
@@ -72,11 +72,11 @@ export default function OAuthCallback() {
     };
 
     completeLogin();
-  }, []); // 의존성 배열 비우기 (최초 1회만 실행)
+  }, []); // 의존성 배열 비우기 (최초 1회만 실행)
 
-  if (error) {
-    return (
-      <div className={styles.authContainer}>
+  if (error) {
+    return (
+      <div className={styles.authContainer}>
         <div className={styles.authCard}>
           <h1 className={styles.authLogo} style={{ color: '#dc3545' }}>Error</h1>
           <p className={styles.authSubtitle}>{error}</p>
@@ -85,10 +85,10 @@ export default function OAuthCallback() {
           </button>
         </div>
       </div>
-    );
-  }
+    );
+  }
 
-  return (
+  return (
     <div className={styles.authContainer}>
       <div className={styles.authCard}>
         <h1 className={styles.authLogo}>MentoAI</h1>

@@ -2,7 +2,14 @@
 
 import axios from 'axios';
 
-const API_BASE_URL = 'https://mentoai.onrender.com';
+const API_BASE_URL = process.env.REACT_APP_BACKEND_API_URL;
+
+if (!API_BASE_URL) {
+  throw new Error(
+    'REACT_APP_BACKEND_API_URL 환경변수가 설정되지 않았습니다. ' +
+    '.env.local 파일을 생성하거나 Vercel 환경변수를 설정해주세요.'
+  );
+}
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

@@ -29,16 +29,16 @@ const getUserIdFromStorage = () => {
 function MyPage() {
   // (State 정의...)
   const [education, setEducation] = useState({ school: '', major: '', grade: '' });
-  const [careerGoal, setCareerGoal] = useState('');
-  const [skills, setSkills] = useState([]);
-  const [currentSkill, setCurrentSkill] = useState({ name: '', level: '중' });
-  const [experiences, setExperiences] = useState([]);
+  const [careerGoal, setCareerGoal] = useState('');
+  const [skills, setSkills] = useState([]);
+  const [currentSkill, setCurrentSkill] = useState({ name: '', level: '중' });
+  const [experiences, setExperiences] = useState([]);
   const [currentExperience, setCurrentExperience] = useState({ type: 'PROJECT', role: '', period: '', techStack: '' });
-  const [evidence, setEvidence] = useState({ certifications: [] });
-  const [currentCert, setCurrentCert] = useState('');
-  
+  const [evidence, setEvidence] = useState({ certifications: [] });
+  const [currentCert, setCurrentCert] = useState('');
+
   const [isSaving, setIsSaving] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); 
+  const [isLoading, setIsLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
   const [batchResults, setBatchResults] = useState([]);
   const [simulationResult, setSimulationResult] = useState(null);
@@ -56,7 +56,7 @@ function MyPage() {
         const response = await apiClient.get(
           `/users/${userId}/profile`
         );
-        
+
         const profile = response.data;
         if (profile) {
           // OpenAPI UserProfile 스펙에서 기존 형식으로 변환
@@ -67,34 +67,34 @@ function MyPage() {
               grade: profile.university.grade ? String(profile.university.grade) : ''
             });
           }
-          
+
           // interestDomains의 첫 번째 항목을 careerGoal로 사용
-          setCareerGoal(profile.interestDomains && profile.interestDomains.length > 0 
-            ? profile.interestDomains[0] 
+          setCareerGoal(profile.interestDomains && profile.interestDomains.length > 0
+            ? profile.interestDomains[0]
             : '');
-          
+
           // techStack을 skills 형식으로 변환
           if (profile.techStack) {
             setSkills(profile.techStack.map(skill => ({
               name: skill.name,
               level: skill.level === 'ADVANCED' ? '상' :
-                     skill.level === 'INTERMEDIATE' ? '중' :
-                     skill.level === 'EXPERT' ? '상' : '하'
+                skill.level === 'INTERMEDIATE' ? '중' :
+                  skill.level === 'EXPERT' ? '상' : '하'
             })));
           }
-          
+
           // experiences를 기존 형식으로 변환
           if (profile.experiences) {
             setExperiences(profile.experiences.map(exp => ({
               type: exp.type,
               role: exp.role,
-              period: exp.startDate && exp.endDate 
+              period: exp.startDate && exp.endDate
                 ? `${exp.startDate} ~ ${exp.endDate}`
                 : exp.startDate || '',
               techStack: exp.techStack ? exp.techStack.join(', ') : ''
             })));
           }
-          
+
           // certifications을 기존 형식으로 변환
           if (profile.certifications) {
             setEvidence({
@@ -115,12 +115,12 @@ function MyPage() {
   }, []); // 마운트 시 1회 실행
 
   // (이벤트 핸들러들...)
-  const handleAddSkill = () => { if (currentSkill.name) { setSkills([...skills, currentSkill]); setCurrentSkill({ name: '', level: '중' }); } };
-  const handleRemoveSkill = (index) => setSkills(skills.filter((_, i) => i !== index));
+  const handleAddSkill = () => { if (currentSkill.name) { setSkills([...skills, currentSkill]); setCurrentSkill({ name: '', level: '중' }); } };
+  const handleRemoveSkill = (index) => setSkills(skills.filter((_, i) => i !== index));
   const handleAddExperience = () => { if (currentExperience.role && currentExperience.period) { setExperiences([...experiences, currentExperience]); setCurrentExperience({ type: 'PROJECT', role: '', period: '', techStack: '' }); } };
-  const handleRemoveExperience = (index) => setExperiences(experiences.filter((_, i) => i !== index));
-  const handleAddCert = () => { if (currentCert) { setEvidence({ ...evidence, certifications: [...evidence.certifications, currentCert] }); setCurrentCert(''); } };
-  const handleRemoveCert = (index) => { setEvidence({ ...evidence, certifications: evidence.certifications.filter((_, i) => i !== index) }); };
+  const handleRemoveExperience = (index) => setExperiences(experiences.filter((_, i) => i !== index));
+  const handleAddCert = () => { if (currentCert) { setEvidence({ ...evidence, certifications: [...evidence.certifications, currentCert] }); setCurrentCert(''); } };
+  const handleRemoveCert = (index) => { setEvidence({ ...evidence, certifications: evidence.certifications.filter((_, i) => i !== index) }); };
 
   // apiClient를 사용하는 handleSave (OpenAPI 스펙에 맞게 변환)
   const handleSave = async () => {
@@ -140,15 +140,15 @@ function MyPage() {
         interestDomains: careerGoal ? [careerGoal] : [],
         techStack: skills.map(skill => ({
           name: skill.name,
-          level: skill.level === '상' ? 'ADVANCED' : 
-                 skill.level === '중' ? 'INTERMEDIATE' : 'BEGINNER'
+          level: skill.level === '상' ? 'ADVANCED' :
+            skill.level === '중' ? 'INTERMEDIATE' : 'BEGINNER'
         })),
         experiences: experiences.map(exp => {
           // period를 startDate/endDate로 파싱
           const periodParts = exp.period.split('~').map(s => s.trim());
           const startDate = periodParts[0] || undefined;
           const endDate = periodParts[1] || undefined;
-          
+
           return {
             type: exp.type === 'PROJECT' ? 'PROJECT' : 'INTERNSHIP',
             role: exp.role,
@@ -169,7 +169,7 @@ function MyPage() {
 
       // apiClient 사용 (헤더 자동 주입)
       const profileResponse = await apiClient.put(
-        `/users/${userId}/profile`, 
+        `/users/${userId}/profile`,
         profileData
       );
 
@@ -183,12 +183,12 @@ function MyPage() {
         console.log('[MyPage] POST /users/{userId}/role-fit');
         console.log('[MyPage] 요청 URL:', `${apiClient.defaults.baseURL}/users/${userId}/role-fit`);
         console.log('[MyPage] 목표 직무 (target):', careerGoal);
-        
+
         const roleFitRequestBody = {
           target: careerGoal,
           topNImprovements: 5
         };
-        
+
         console.log('[MyPage] 요청 본문 (roleFitRequestBody):', roleFitRequestBody);
 
         try {
@@ -202,7 +202,7 @@ function MyPage() {
           console.log('[MyPage] 전체 RoleFitResponse:', roleFitResponse.data);
           console.log('[MyPage] 🎯 계산된 RoleFitScore:', roleFitResponse.data?.roleFitScore);
           console.log('[MyPage] 📊 RoleFitScore Breakdown:', roleFitResponse.data?.breakdown);
-          
+
           if (roleFitResponse.data?.breakdown) {
             console.log('[MyPage]    - SkillFit:', roleFitResponse.data.breakdown.skillFit);
             console.log('[MyPage]    - ExperienceFit:', roleFitResponse.data.breakdown.experienceFit);
@@ -219,7 +219,7 @@ function MyPage() {
       } else {
         console.log('[MyPage] ⚠️ 목표 직무(careerGoal)가 없어 RoleFitScore 계산을 건너뜁니다.');
       }
-      
+
       // 토스트 메시지 표시
       setShowToast(true);
       setTimeout(() => setShowToast(false), 2000);
@@ -247,7 +247,7 @@ function MyPage() {
       if (!userId) throw new Error("인증 정보가 없습니다.");
 
       const targets = ['backend_entry', 'frontend_entry', 'data_analyst']; // 예시 직무 목록
-      
+
       console.log('[MyPage] ===== 일괄 RoleFitScore 계산 시작 =====');
       console.log('[MyPage] POST /users/{userId}/role-fit/batch');
       console.log('[MyPage] 요청 URL:', `${apiClient.defaults.baseURL}/users/${userId}/role-fit/batch`);
@@ -352,13 +352,13 @@ function MyPage() {
 
   // (JSX)
   return (
-    <div className="profile-setup-container"> 
-      <div className="profile-card"> 
+    <div className="profile-setup-container">
+      <div className="profile-card">
         <h2 className="profile-card-title">📝 프로필 수정</h2>
         <p className="profile-card-description">
           AI 추천 정확도를 높이기 위해 프로필 정보를 최신으로 유지해주세요.
         </p>
-        
+
         {/* --- 1. 기본 정보 섹션 --- */}
         <div className="form-section">
           <h3>기본 학력</h3>
@@ -478,13 +478,13 @@ function MyPage() {
         </button>
       </div>
 
-      {showToast && (
-        <div className="toast-message">
-          ✅ 프로필이 저장되었습니다!
-        </div>
-      )}
-    </div>
-  );
+      {showToast && (
+        <div className="toast-message">
+          ✅ 프로필이 저장되었습니다!
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default MyPage;
