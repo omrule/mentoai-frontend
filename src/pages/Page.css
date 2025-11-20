@@ -16,7 +16,7 @@
 .page-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px 24px 80px; /* [수정] 상단 패딩 더 줄임 */
+  padding: 40px 24px 80px; /* [수정] 상단 패딩 복원 */
   min-height: calc(100vh - 60px); /* [수정] 최소 높이만 지정 */
   box-sizing: border-box;
 }

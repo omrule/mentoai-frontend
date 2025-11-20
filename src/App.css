@@ -37,13 +37,13 @@ body {
 
 /* [!!!] [수정] .content 클래스 (헤더가 있는 페이지용)
   - 'height'를 고정하고 여기서 스크롤을 담당합니다.
-  - 스크롤바가 화면 제일 오른쪽에 생깁니다.
+  - 스크롤바가 화면 제일 오른쪽, Navbar 아래에서 시작합니다.
 */
 .content {
-  padding-top: 60px; /* [수정] 상단 패딩을 Navbar 높이(60px)에 맞춤 */
+  margin-top: 60px; /* [수정] Navbar 아래로 이동 */
   background-color: #ffffff;
   box-sizing: border-box;
-  height: 100vh; /* [수정] 전체 화면 높이 */
+  height: calc(100vh - 60px); /* [수정] Navbar 제외한 높이 */
   width: 100%;
   overflow-y: auto; /* [수정] 여기서 스크롤 발생 (화면 오른쪽에) */
   overflow-x: hidden;
@@ -51,10 +51,10 @@ body {
 
 /* 채팅 페이지 전용 content 클래스 */
 .content-chat {
-  padding-top: 60px; /* [수정] Navbar 높이만큼 패딩 (box-sizing에 포함됨) */
+  margin-top: 60px; /* [수정] Navbar 아래로 이동 */
   background-color: #ffffff;
   box-sizing: border-box;
-  height: 100vh; /* [수정] 전체 화면 높이 (padding 포함) */
+  height: calc(100vh - 60px); /* [수정] Navbar 제외한 높이 */
   width: 100%;
   overflow: hidden;
   display: flex;
