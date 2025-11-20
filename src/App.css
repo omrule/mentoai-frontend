@@ -14,7 +14,7 @@ body {
   background-color: #ffffff;
   min-height: 100vh;
   overflow-x: hidden;
-  overflow-y: hidden;
+  overflow-y: auto;
 }
 
 /* [!!!] [수정] .App을 Flex 컨테이너로 변경
@@ -52,11 +52,14 @@ body {
 
 /* 채팅 페이지 전용 content 클래스 */
 .content-chat {
-  padding: 80px 0 40px 0; 
+  padding: 80px 0 0 0; 
   background-color: #ffffff;
   box-sizing: border-box;
-  min-height: calc(100vh - 60px);
+  height: calc(100vh - 60px);
   width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .content-chat > * {
