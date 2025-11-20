@@ -50,10 +50,10 @@ body {
 
 /* 채팅 페이지 전용 content 클래스 */
 .content-chat {
-  padding: 60px 0 0 0; /* [수정] 상단 패딩 60px로 통일 */
+  margin-top: 60px; /* [수정] Navbar 높이만큼 아래로 이동 */
   background-color: #ffffff;
   box-sizing: border-box;
-  height: 100vh;
+  height: calc(100vh - 60px); /* [수정] Navbar 제외한 높이 */
   width: 100%;
   overflow: hidden;
   display: flex;
