@@ -2,13 +2,14 @@
 
 .profile-card-container {
   margin: 0 auto; 
-  padding: 60px 24px 80px; 
+  padding: 40px 24px 80px; 
   box-sizing: border-box;
   background-color: #f8f9fa;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  min-height: calc(100vh - 60px);
+  height: 100%; /* [수정] 높이 100% */
+  overflow-y: auto; /* [수정] 스크롤 추가 */
   max-width: 1320px;
   width: 100%;
 }
@@ -16,8 +17,9 @@
 .page-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 60px 24px 80px;
-  min-height: calc(100vh - 60px);
+  padding: 40px 24px 80px; /* [수정] 상단 패딩 줄임 */
+  height: 100%; /* [수정] 부모 높이 100% */
+  overflow-y: auto; /* [수정] 여기서 스크롤 발생 */
   box-sizing: border-box;
 }
 .page-container h2 {
@@ -39,6 +41,8 @@
   padding: 20px 20px 40px;
   box-sizing: border-box;
   background-color: #ffffff; 
+  height: 100%; /* [수정] */
+  overflow-y: auto; /* [수정] */
 }
 
 .profile-card {
