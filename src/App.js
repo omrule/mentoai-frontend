@@ -3,21 +3,19 @@
 import React, { useEffect, useRef } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import AuthPage from './pages/Auth';
-
-// 브라우저 스크롤 복원 비활성화
-if ('scrollRestoration' in window.history) {
-  window.history.scrollRestoration = 'manual';
-} 
-
-// --- (컴포넌트 임포트) ---
 import Navbar from './components/Navbar';
 import ActivityRecommender from './pages/ActivityRecommender';
 import ProfileSetup from './pages/ProfileSetup';
 import PromptInput from './pages/PromptInput';
 import ScheduleCalendar from './pages/ScheduleCalendar';
 import MyPage from './pages/MyPage';
-import OAuthCallback from './pages/OAuthCallback'; // 콜백 페이지 임포트
-import './App.css'; 
+import OAuthCallback from './pages/OAuthCallback';
+import './App.css';
+
+// 브라우저 스크롤 복원 비활성화
+if ('scrollRestoration' in window.history) {
+  window.history.scrollRestoration = 'manual';
+}
 // ---
 
 /**
