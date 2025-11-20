@@ -45,10 +45,11 @@
 .profile-card {
   width: 100%;
   max-width: 1200px; 
-  padding: 25px 40px; 
+  padding: 30px 40px; 
   background-color: white;
   border-radius: 16px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  box-shadow: var(--shadow-soft); /* [수정] 부드러운 그림자 */
+  border: 1px solid #f0f0f0; /* [추가] 얇은 테두리 */
   text-align: left;
   box-sizing: border-box;
 }
@@ -123,16 +124,24 @@
 }
 .form-group input, .form-group select, .form-group textarea {
   width: 100%;
-  padding: 10px; 
-  border: 1px solid #ccc;
+  padding: 10px 12px; 
+  border: 1px solid var(--border-color); /* [수정] 변수 사용 */
   border-radius: 8px;
   font-size: 15px;
   box-sizing: border-box;
-  height: 37px; /* [!!!] [수정] CustomSelect(37px)와 높이를 맞춥니다. */
+  height: 40px; /* [수정] 높이 통일 (37px -> 40px) */
+  transition: border-color 0.2s, box-shadow 0.2s; /* [추가] 전환 효과 */
 }
-/* [!!!] [추가] CustomSelect 높이 강제 (높이 문제 해결) */
+
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-color); /* [수정] 포커스 색상 */
+  box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2); /* [추가] 포커스 링 효과 */
+}
+
+/* [수정] CustomSelect 높이 강제 */
 .form-group .custom-select-wrapper {
-  height: 37px;
+  height: 40px;
 }
 
 .form-group textarea {
@@ -167,18 +176,18 @@
 .add-item-btn {
   padding: 0 20px;
   font-size: 14px;
-  font-weight: bold;
+  font-weight: 600;
   color: white;
-  background-color: #007bff;
+  background-color: var(--primary-color); /* [수정] 메인 컬러 */
   border: none;
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.2s;
   white-space: nowrap;
-  height: 37px; 
+  height: 40px; /* [수정] 높이 40px */
   align-self: end;
 }
-.add-item-btn:hover { background-color: #0056b3; }
+.add-item-btn:hover { background-color: var(--primary-hover); }
 
 .added-list {
   list-style: none;
@@ -218,17 +227,17 @@
 .submit-button {
   width: 100%;
   padding: 15px;
-  margin-top: 10px;
+  margin-top: 20px;
   font-size: 16px;
   font-weight: bold;
   color: white;
-  background-color: #007bff;
+  background-color: var(--primary-color); /* [수정] 메인 컬러 */
   border: none;
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.2s;
 }
-.submit-button:hover { background-color: #0056b3; }
+.submit-button:hover { background-color: var(--primary-hover); }
 .submit-button:disabled { background-color: #6c757d; }
 .mypage-card { max-width: 100%; }
 

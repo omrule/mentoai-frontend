@@ -1,3 +1,13 @@
+/* 전역 변수 설정 */
+:root {
+  --primary-color: #1a73e8; /* Gemini Blue */
+  --primary-hover: #1557b0;
+  --background-color: #f8f9fa;
+  --text-color: #202124;
+  --border-color: #dadce0;
+  --shadow-soft: 0 2px 12px rgba(0,0,0,0.08); /* 부드러운 그림자 */
+}
+
 html, body, #root {
   margin: 0;
   padding: 0;
@@ -10,6 +20,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color: var(--text-color);
 }
 
 code {
