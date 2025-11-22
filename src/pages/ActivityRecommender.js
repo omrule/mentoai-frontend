@@ -59,6 +59,91 @@ function ActivityRecommender() {
     }
   };
 
+  const fetchRecommendationsWithScores = async (userId, targetRole) => {
+    if (!userId) {
+      return;
+    }
+    try {
+      console.log('[ActivityRecommender] ===== 점수 포함 추천 조회 시작 =====');
+      const response = await apiClient.get(`/recommend/activities/${userId}/with-scores`, {
+        params: {
+          targetRole: targetRole || undefined,
+          limit: 10
+        }
+      });
+      console.log('[ActivityRecommender] 점수 포함 추천 응답:', response.data);
+    } catch (error) {
+      console.error('[ActivityRecommender] 점수 포함 추천 실패:', error);
+      console.error('[ActivityRecommender] 점수 포함 추천 에러 응답:', error.response?.data);
+    }
+  };
+
+  const fetchTrendingActivities = async () => {
+    try {
+      console.log('[ActivityRecommender] ===== 인기 활동 조회 시작 =====');
+      const response = await apiClient.get('/recommend/trending', {
+        params: {
+          limit: 10
+        }
+      });
+      console.log('[ActivityRecommender] 인기 활동 응답:', response.data);
+    } catch (error) {
+      console.error('[ActivityRecommender] 인기 활동 조회 실패:', error);
+      console.error('[ActivityRecommender] 인기 활동 에러 응답:', error.response?.data);
+    }
+  };
+
+  const fetchPersonalizedRecommendations = async (userId) => {
+    if (!userId) {
+      return;
+    }
+    try {
+      console.log('[ActivityRecommender] ===== 사용자 맞춤 추천 조회 시작 =====');
+      const response = await apiClient.get(`/recommend/activities/${userId}`, {
+        params: {
+          limit: 10,
+          campusOnly: false
+        }
+      });
+      console.log('[ActivityRecommender] 사용자 맞춤 추천 응답:', response.data);
+    } catch (error) {
+      console.error('[ActivityRecommender] 사용자 맞춤 추천 실패:', error);
+      console.error('[ActivityRecommender] 사용자 맞춤 추천 에러 응답:', error.response?.data);
+    }
+  };
+
+  const fetchRoleFitSimulation = async (userId, targetRole) => {
+    if (!userId || !targetRole) {
+      return;
+    }
+    try {
+      console.log('[ActivityRecommender] ===== RoleFit 시뮬레이션 시작 =====');
+      const simulationRequest = {
+        target: targetRole,
+        addSkills: [
+          {
+            name: 'Problem Solving',
+            level: 'INTERMEDIATE'
+          }
+        ],
+        addExperiences: [
+          {
+            type: 'PROJECT',
+            durationMonths: 3
+          }
+        ]
+      };
+      const response = await apiClient.post(
+        `/users/${userId}/role-fit/simulate`,
+        simulationRequest
+      );
+      console.log('[ActivityRecommender] RoleFit 시뮬레이션 응답:', response.data);
+    } catch (error) {
+      console.error('[ActivityRecommender] RoleFit 시뮬레이션 실패:', error);
+      console.error('[ActivityRecommender] RoleFit 시뮬레이션 에러 응답:', error.response?.data);
+    }
+  };
+
   // [신규] 페이지 로드 시 활동 목록과 점수를 가져오는 로직
   useEffect(() => {
     const fetchData = async () => {
@@ -164,6 +249,11 @@ function ActivityRecommender() {
             console.error('[ActivityRecommender] 개선 제안 에러 응답:', improvementsError.response?.data);
           }
         }
+
+        await fetchRecommendationsWithScores(userId, roleFitResponse.data?.target || careerGoal);
+        await fetchPersonalizedRecommendations(userId);
+        await fetchTrendingActivities();
+        await fetchRoleFitSimulation(userId, roleFitResponse.data?.target || careerGoal);
       } catch (roleFitError) {
         console.error('[ActivityRecommender] RoleFitScore 계산 실패:', roleFitError);
         console.error('[ActivityRecommender] 에러 응답:', roleFitError.response?.data);
@@ -178,6 +268,28 @@ function ActivityRecommender() {
   }, []); // 페이지가 처음 로드될 때 1회 실행
 
   const selectedActivity = activities.find(act => act.activityId === activeTab);
+
+  useEffect(() => {
+    const fetchSimilarActivities = async () => {
+      if (!activeTab) {
+        return;
+      }
+      try {
+        console.log('[ActivityRecommender] ===== 유사 활동 조회 시작 =====', activeTab);
+        const response = await apiClient.get(`/recommend/similar/${activeTab}`, {
+          params: {
+            limit: 5
+          }
+        });
+        console.log('[ActivityRecommender] 유사 활동 응답:', response.data);
+      } catch (error) {
+        console.error('[ActivityRecommender] 유사 활동 조회 실패:', error);
+        console.error('[ActivityRecommender] 유사 활동 에러 응답:', error.response?.data);
+      }
+    };
+
+    fetchSimilarActivities();
+  }, [activeTab]);
 
   return (
     <div className="page-container">
