@@ -79,12 +79,10 @@ function AuthPage() {
   // 3) 로딩 화면 (isChecking)
   if (isChecking) {
     return (
-      // [수정] className 적용
-      <div className={styles.authContainer}>
-        <div className={styles.authCard}>
-          <h1 className={styles.authLogo}>MentoAI</h1>
-          <p className={styles.authSubtitle}>로그인 상태를 확인 중입니다...</p>
-        </div>
+      <div className={styles.loadingContainer}>
+        <h1 className={styles.loadingLogo}>MentoAI</h1>
+        <p className={styles.loadingText}>로그인 상태를 확인 중입니다...</p>
+        <div className={styles.sleekSpinner}></div>
       </div>
     );
   }

@@ -76,25 +76,21 @@ export default function OAuthCallback() {
 
   if (error) {
     return (
-      <div className={styles.authContainer}>
-        <div className={styles.authLoadingCard}>
-          <h1 className={styles.authLogo} style={{ color: '#dc3545' }}>Error</h1>
-          <p className={styles.authSubtitle}>{error}</p>
-          <button className={styles.googleLoginButton} onClick={() => window.location.href = '/login'}>
-            <span>로그인 페이지로 돌아가기</span>
-          </button>
-        </div>
+      <div className={styles.loadingContainer}>
+        <h1 className={styles.loadingLogo} style={{ background: 'none', WebkitTextFillColor: '#dc3545', color: '#dc3545' }}>Error</h1>
+        <p className={styles.loadingText} style={{ color: '#dc3545' }}>{error}</p>
+        <button className={styles.googleLoginButton} onClick={() => window.location.href = '/login'}>
+          <span>로그인 페이지로 돌아가기</span>
+        </button>
       </div>
     );
   }
 
   return (
-    <div className={styles.authContainer}>
-      <div className={styles.authLoadingCard}>
-        <h1 className={styles.authLogo}>MentoAI</h1>
-        <p className={styles.authSubtitle}>{message}</p>
-        <div className={styles.loadingSpinner}></div>
-      </div>
+    <div className={styles.loadingContainer}>
+      <h1 className={styles.loadingLogo}>MentoAI</h1>
+      <p className={styles.loadingText}>{message}</p>
+      <div className={styles.sleekSpinner}></div>
     </div>
   );
 }

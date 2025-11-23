@@ -22,7 +22,7 @@
   overflow: hidden; /* 내부 컨텐츠가 둥근 모서리를 넘지 않도록 */
 }
 
-/* 로딩 화면용 카드 (작게) */
+/* 로딩 화면용 카드 (작게) - [Deprecation Notice] Use loadingContainer instead for new clean look */
 .authLoadingCard {
   display: flex;
   flex-direction: column;
@@ -220,4 +220,75 @@
   .authRight {
     padding: 40px 30px;
   }
+}
+
+/* =========================================
+   New Full Screen Loading / Minimalist UI 
+   ========================================= */
+
+.loadingContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff; /* Clean white, or use #f8f9fa for subtle grey */
+  z-index: 9999;
+}
+
+.loadingLogo {
+  font-size: 48px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 24px;
+  opacity: 0;
+  animation: fadeInUp 0.8s ease-out forwards;
+  letter-spacing: -1px;
+}
+
+.loadingText {
+  font-size: 17px;
+  color: #5f6368;
+  font-weight: 500;
+  margin-bottom: 40px;
+  opacity: 0;
+  animation: fadeInUp 0.8s ease-out 0.2s forwards;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Sleek Spinner */
+.sleekSpinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(26, 115, 232, 0.1);
+  border-radius: 50%;
+  border-top-color: #1a73e8;
+  opacity: 0;
+  animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite, fadeIn 0.5s ease-out 0.4s forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
