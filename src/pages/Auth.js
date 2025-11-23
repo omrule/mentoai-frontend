@@ -76,13 +76,53 @@ function AuthPage() {
     window.location.href = loginUrl;
   };
 
+  // 인라인 스타일 정의 (CSS 캐싱 방지용)
+  const loadingContainerStyle = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    zIndex: 9999,
+  };
+
+  const loadingLogoStyle = {
+    fontSize: '48px',
+    fontWeight: '900',
+    background: 'linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    marginBottom: '24px',
+    letterSpacing: '-1px',
+  };
+
+  const spinnerStyle = `
+    @keyframes spin-inline { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .spinner-inline {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(26, 115, 232, 0.1);
+      border-radius: 50%;
+      border-top-color: #1a73e8;
+      animation: spin-inline 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+    }
+  `;
+
   // 3) 로딩 화면 (isChecking)
   if (isChecking) {
     return (
-      <div className={styles.loadingContainer}>
-        <h1 className={styles.loadingLogo}>MentoAI</h1>
-        <p className={styles.loadingText}>로그인 상태를 확인 중입니다...</p>
-        <div className={styles.sleekSpinner}></div>
+      <div style={loadingContainerStyle}>
+        <style>{spinnerStyle}</style>
+        <h1 style={loadingLogoStyle}>MentoAI</h1>
+        <p style={{ fontSize: '17px', color: '#5f6368', marginBottom: '40px', fontWeight: '500' }}>
+          로그인 상태를 확인 중입니다...
+        </p>
+        <div className="spinner-inline"></div>
       </div>
     );
   }
