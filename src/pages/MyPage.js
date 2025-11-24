@@ -70,7 +70,7 @@ function MyPage() {
 
   // 학교 검색 (AsyncSelect 용)
   const loadSchoolOptions = (inputValue) => {
-    return apiClient.get(`/meta/schools?q=${inputValue}`)
+    return apiClient.get(`/meta/data/schools?q=${inputValue}`)
       .then(res => {
         return res.data.map(s => ({ value: s, label: s }));
       });

@@ -12,10 +12,10 @@ export const useMetaData = () => {
     const fetchAll = async () => {
       try {
         const [majors, jobs, skills, certs] = await Promise.all([
-          apiClient.get('/meta/majors'),
-          apiClient.get('/meta/jobs'),
-          apiClient.get('/meta/skills'),
-          apiClient.get('/meta/certifications')
+          apiClient.get('/meta/data/majors'),
+          apiClient.get('/meta/data/jobs'),
+          apiClient.get('/meta/data/skills'),
+          apiClient.get('/meta/data/certifications')
         ]);
 
         // API returns string arrays, convert to { value, label } for react-select
