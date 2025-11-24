@@ -221,10 +221,10 @@ function ProfileSetup() {
       minHeight: '40px',
       height: '40px',
       borderRadius: '8px',
-      borderColor: state.isFocused ? '#1a73e8' : '#ccc',
-      boxShadow: state.isFocused ? '0 0 0 2px rgba(26, 115, 232, 0.2)' : 'none',
+      borderColor: '#ccc',
+      boxShadow: 'none',
       '&:hover': {
-        borderColor: state.isFocused ? '#1a73e8' : '#888'
+        borderColor: '#888'
       },
       fontSize: '15px',
       backgroundColor: 'white'
@@ -234,12 +234,14 @@ function ProfileSetup() {
       padding: '0 12px',
       height: '38px',
       display: 'flex',
-      alignItems: 'center'
+      alignItems: 'center',
+      lineHeight: '38px'
     }),
     placeholder: (base) => ({
       ...base,
       color: '#888',
-      margin: 0
+      margin: 0,
+      lineHeight: '38px'
     }),
     menu: (base) => ({
         ...base,
@@ -262,14 +264,19 @@ function ProfileSetup() {
     singleValue: (base) => ({
         ...base,
         color: '#333',
-        margin: 0
+        margin: 0,
+        lineHeight: '38px'
     }),
     input: (base) => ({
         ...base,
         margin: 0,
         padding: 0,
         color: '#333',
-        caretColor: 'transparent' // [수정] 커서 숨김
+        caretColor: 'transparent',
+        lineHeight: '38px',
+        '& input': {
+          opacity: 0
+        }
     }),
     indicatorSeparator: () => ({
         display: 'none'
@@ -302,10 +309,20 @@ function ProfileSetup() {
                 loadOptions={loadSchoolOptions}
                 onChange={(selected) => setEducation({ ...education, school: selected ? selected.value : '' })}
                 value={education.school ? { label: education.school, value: education.school } : null}
-                placeholder="학교 검색" // [수정] Placeholder 변경
+                placeholder="학교 검색"
                 styles={{
                     ...selectStyles,
-                    input: (base) => ({ ...base, margin: 0, padding: 0, color: '#333', caretColor: 'auto' }) // [수정] 학교 검색은 커서 유지
+                    input: (base) => ({ 
+                      ...base, 
+                      margin: 0, 
+                      padding: 0, 
+                      color: '#333', 
+                      caretColor: 'auto',
+                      lineHeight: '38px',
+                      '& input': {
+                        opacity: 1
+                      }
+                    })
                 }}
                 components={{ DropdownIndicator: CustomDropdownIndicator }}
                 required
@@ -322,6 +339,8 @@ function ProfileSetup() {
                 components={{ DropdownIndicator: CustomDropdownIndicator }}
                 required
                 isSearchable={false}
+                blurInputOnSelect={false}
+                openMenuOnFocus={false}
               />
             </div>
             <div className="form-group">
@@ -344,6 +363,8 @@ function ProfileSetup() {
                 components={{ DropdownIndicator: CustomDropdownIndicator }}
                 required
                 isSearchable={false}
+                blurInputOnSelect={false}
+                openMenuOnFocus={false}
               />
             </div>
           </div>
@@ -359,10 +380,12 @@ function ProfileSetup() {
                 options={skillOptions}
                 onChange={(selected) => setCurrentSkill({ ...currentSkill, name: selected ? selected.value : '' })}
                 value={currentSkill.name ? { label: currentSkill.name, value: currentSkill.name } : null}
-                placeholder="기술 선택" // [수정] Placeholder 변경
+                placeholder="기술 선택"
                 styles={selectStyles}
                 components={{ DropdownIndicator: CustomDropdownIndicator }}
                 isSearchable={false}
+                blurInputOnSelect={false}
+                openMenuOnFocus={false}
               />
             </div>
             <div className="form-group">
@@ -422,6 +445,8 @@ function ProfileSetup() {
                 placeholder="사용 기술 선택 (다중 선택)"
                 styles={selectStyles}
                 components={{ DropdownIndicator: CustomDropdownIndicator }}
+                blurInputOnSelect={false}
+                openMenuOnFocus={false}
               />
             </div>
             
@@ -453,6 +478,9 @@ function ProfileSetup() {
                     placeholder="자격증 검색 및 선택"
                     styles={selectStyles}
                     components={{ DropdownIndicator: CustomDropdownIndicator }}
+                    isSearchable={true}
+                    blurInputOnSelect={false}
+                    openMenuOnFocus={false}
                   />
               </div>
               <button type="button" className="add-item-btn" onClick={handleAddCert}>추가</button>
