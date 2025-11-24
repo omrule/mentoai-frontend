@@ -1,12 +1,15 @@
 // src/pages/MyPage.js
 
 import React, { useState, useEffect } from 'react';
+import Select from 'react-select';
+import AsyncSelect from 'react-select/async';
 import apiClient from '../api/apiClient';
+import { useMetaData } from '../hooks/useMetaData';
 import './Page.css';
 import CustomSelect from '../components/CustomSelect';
 
 // (옵션 정의...)
-const skillOptions = [{ value: '상', label: '상 (업무 활용)' }, { value: '중', label: '중 (토이 프로젝트)' }, { value: '하', label: '하 (학습 경험)' }];
+const levelOptions = [{ value: '상', label: '상 (업무 활용)' }, { value: '중', label: '중 (토이 프로젝트)' }, { value: '하', label: '하 (학습 경험)' }];
 const experienceOptions = [{ value: 'PROJECT', label: '프로젝트' }, { value: 'INTERN', label: '인턴' }];
 const gradeOptions = [
   { value: '1', label: '1학년' },
@@ -27,6 +30,8 @@ const getUserIdFromStorage = () => {
 };
 
 function MyPage() {
+  const { majorOptions, jobOptions, skillOptions, certOptions } = useMetaData();
+
   // (State 정의...)
   const [education, setEducation] = useState({ school: '', major: '', grade: '' });
   const [careerGoal, setCareerGoal] = useState('');
@@ -45,6 +50,14 @@ function MyPage() {
   const [isCalculatingBatch, setIsCalculatingBatch] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
 
+  // 학교 검색 (AsyncSelect 용)
+  const loadSchoolOptions = (inputValue) => {
+    return apiClient.get(`/meta/schools?q=${inputValue}`)
+      .then(res => {
+        return res.data.map(s => ({ value: s, label: s }));
+      });
+  };
+
   // 페이지 로드 시 /profile API를 호출하여 기존 정보 로드
   useEffect(() => {
     const fetchProfile = async () => {
@@ -53,11 +66,10 @@ function MyPage() {
         if (!userId) throw new Error("No auth data");
 
         // [신규] 추가 API 연동 확인 (태그, 직무, 메타데이터) - 병렬 호출
-        const [profileResponse, tagsResponse, rolesResponse, metaSkillsResponse] = await Promise.allSettled([
+        const [profileResponse, tagsResponse, rolesResponse] = await Promise.allSettled([
           apiClient.get(`/users/${userId}/profile`),
           apiClient.get('/tags'),
-          apiClient.get('/roles'),
-          apiClient.get('/meta/skills')
+          apiClient.get('/roles')
         ]);
 
         // 1. 프로필 응답 처리
@@ -126,12 +138,6 @@ function MyPage() {
           console.log('[MyPage] GET /roles 응답:', rolesResponse.value.data);
         } else {
           console.warn('[MyPage] GET /roles 실패:', rolesResponse.reason);
-        }
-
-        if (metaSkillsResponse.status === 'fulfilled') {
-          console.log('[MyPage] GET /meta/skills 응답:', metaSkillsResponse.value.data);
-        } else {
-          console.warn('[MyPage] GET /meta/skills 실패:', metaSkillsResponse.reason);
         }
 
       } catch (error) {
@@ -375,11 +381,27 @@ function MyPage() {
     }
   };
 
+  // 공통 Select 스타일
+  const selectStyles = {
+    control: (base) => ({
+      ...base,
+      minHeight: '42px',
+      borderColor: '#ccc',
+      boxShadow: 'none',
+      '&:hover': {
+        borderColor: '#888'
+      }
+    }),
+    menu: (base) => ({
+        ...base,
+        zIndex: 9999
+    })
+  };
+
   if (isLoading) {
     return <div className="profile-setup-container"><div className="profile-card">프로필 정보를 불러오는 중...</div></div>;
   }
 
-  // (JSX)
   return (
     <div className="profile-setup-container">
       <div className="profile-card">
@@ -394,11 +416,27 @@ function MyPage() {
           <div className="form-grid two-cols">
             <div className="form-group">
               <label>학교</label>
-              <input type="text" value={education.school} onChange={(e) => setEducation({ ...education, school: e.target.value })} required placeholder="예: 경희대학교" />
+              <AsyncSelect
+                cacheOptions
+                defaultOptions
+                loadOptions={loadSchoolOptions}
+                onChange={(selected) => setEducation({ ...education, school: selected ? selected.value : '' })}
+                value={education.school ? { label: education.school, value: education.school } : null}
+                placeholder="학교 검색 (예: 경희대학교)"
+                styles={selectStyles}
+                required
+              />
             </div>
             <div className="form-group">
               <label>전공</label>
-              <input type="text" value={education.major} onChange={(e) => setEducation({ ...education, major: e.target.value })} required placeholder="예: 컴퓨터공학과" />
+              <Select
+                options={majorOptions}
+                onChange={(selected) => setEducation({ ...education, major: selected ? selected.value : '' })}
+                value={education.major ? { label: education.major, value: education.major } : null}
+                placeholder="전공 선택"
+                styles={selectStyles}
+                required
+              />
             </div>
             <div className="form-group">
               <label>학년</label>
@@ -410,7 +448,14 @@ function MyPage() {
             </div>
             <div className="form-group">
               <label>목표 직무</label>
-              <input type="text" value={careerGoal} onChange={(e) => setCareerGoal(e.target.value)} required placeholder="예: AI 엔지니어" />
+              <Select
+                options={jobOptions}
+                onChange={(selected) => setCareerGoal(selected ? selected.value : '')}
+                value={careerGoal ? { label: careerGoal, value: careerGoal } : null}
+                placeholder="목표 직무 선택"
+                styles={selectStyles}
+                required
+              />
             </div>
           </div>
         </div>
@@ -421,12 +466,18 @@ function MyPage() {
           <div className="form-grid skill-grid">
             <div className="form-group">
               <label>기술 이름</label>
-              <input type="text" placeholder="예: React" value={currentSkill.name} onChange={(e) => setCurrentSkill({ ...currentSkill, name: e.target.value })} />
+              <Select
+                options={skillOptions}
+                onChange={(selected) => setCurrentSkill({ ...currentSkill, name: selected ? selected.value : '' })}
+                value={currentSkill.name ? { label: currentSkill.name, value: currentSkill.name } : null}
+                placeholder="기술 선택 (예: React)"
+                styles={selectStyles}
+              />
             </div>
             <div className="form-group">
               <label>수준</label>
               <CustomSelect
-                options={skillOptions}
+                options={levelOptions}
                 value={currentSkill.level}
                 onChange={(newValue) => setCurrentSkill({ ...currentSkill, level: newValue })}
               />
@@ -465,7 +516,21 @@ function MyPage() {
             </div>
             <div className="form-group">
               <label>사용 기술</label>
-              <input type="text" placeholder="예: React, Spring" value={currentExperience.techStack} onChange={(e) => setCurrentExperience({ ...currentExperience, techStack: e.target.value })} />
+              <Select
+                isMulti
+                options={skillOptions}
+                onChange={(selectedOptions) => {
+                  const techString = selectedOptions ? selectedOptions.map(s => s.value).join(', ') : '';
+                  setCurrentExperience({ ...currentExperience, techStack: techString });
+                }}
+                value={
+                    currentExperience.techStack 
+                    ? currentExperience.techStack.split(',').map(s => s.trim()).filter(s=>s).map(s => ({ label: s, value: s }))
+                    : []
+                }
+                placeholder="사용 기술 선택 (다중 선택)"
+                styles={selectStyles}
+              />
             </div>
             <div className="form-group grid-col-span-2 grid-align-end">
               <button type="button" className="add-item-btn" onClick={handleAddExperience}>추가</button>
@@ -487,7 +552,15 @@ function MyPage() {
           <div className="form-group">
             <label>자격증</label>
             <div className="input-group">
-              <input type="text" placeholder="자격증 이름 (예: 정보처리기사)" value={currentCert} onChange={(e) => setCurrentCert(e.target.value)} />
+              <div style={{ flex: 1 }}>
+                <Select
+                  options={certOptions}
+                  onChange={(selected) => setCurrentCert(selected ? selected.value : '')}
+                  value={currentCert ? { label: currentCert, value: currentCert } : null}
+                  placeholder="자격증 검색 및 선택"
+                  styles={selectStyles}
+                />
+              </div>
               <button type="button" className="add-item-btn" onClick={handleAddCert}>추가</button>
             </div>
             <ul className="added-list">

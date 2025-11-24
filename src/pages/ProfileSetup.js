@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Select from 'react-select';
+import AsyncSelect from 'react-select/async';
 import apiClient from '../api/apiClient';
+import { useMetaData } from '../hooks/useMetaData';
 import './Page.css';
 import CustomSelect from '../components/CustomSelect'; 
 
 // (옵션 정의...)
-const skillOptions = [{ value: '상', label: '상 (업무 활용)' }, { value: '중', label: '중 (토이 프로젝트)' }, { value: '하', label: '하 (학습 경험)' }];
+const levelOptions = [{ value: '상', label: '상 (업무 활용)' }, { value: '중', label: '중 (토이 프로젝트)' }, { value: '하', label: '하 (학습 경험)' }];
 const experienceOptions = [{ value: 'PROJECT', label: '프로젝트' }, { value: 'INTERN', label: '인턴' }];
 const gradeOptions = [
   { value: '1', label: '1학년' },
@@ -30,6 +33,8 @@ const getAuthDataFromStorage = () => {
 };
 
 function ProfileSetup() {
+  const { majorOptions, jobOptions, skillOptions, certOptions } = useMetaData();
+  
   // [수정] State 기본값을 빈 문자열로 변경
   const [education, setEducation] = useState({ school: '', major: '', grade: '' });
   const [careerGoal, setCareerGoal] = useState('');
@@ -43,6 +48,14 @@ function ProfileSetup() {
   const [currentCert, setCurrentCert] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const navigate = useNavigate();
+
+  // 학교 검색 (AsyncSelect 용)
+  const loadSchoolOptions = (inputValue) => {
+    return apiClient.get(`/meta/schools?q=${inputValue}`)
+      .then(res => {
+        return res.data.map(s => ({ value: s, label: s }));
+      });
+  };
 
   // (이벤트 핸들러들...)
   const handleAddSkill = () => { if (currentSkill.name) { setSkills([...skills, currentSkill]); setCurrentSkill({ name: '', level: '중' }); } };
@@ -183,7 +196,23 @@ function ProfileSetup() {
     }
   };
 
-  // (JSX - UI 다듬기)
+  // 공통 Select 스타일
+  const selectStyles = {
+    control: (base) => ({
+      ...base,
+      minHeight: '42px',
+      borderColor: '#ccc',
+      boxShadow: 'none',
+      '&:hover': {
+        borderColor: '#888'
+      }
+    }),
+    menu: (base) => ({
+        ...base,
+        zIndex: 9999
+    })
+  };
+
   return (
     <div className="profile-setup-container">
       <form className="profile-card" onSubmit={handleSubmit}>
@@ -196,13 +225,27 @@ function ProfileSetup() {
           <div className="form-grid two-cols">
             <div className="form-group">
               <label>학교</label>
-              {/* [수정] list 속성 삭제 */}
-              <input type="text" value={education.school} onChange={(e) => setEducation({ ...education, school: e.target.value })} required placeholder="예: 경희대학교" />
+              <AsyncSelect
+                cacheOptions
+                defaultOptions
+                loadOptions={loadSchoolOptions}
+                onChange={(selected) => setEducation({ ...education, school: selected ? selected.value : '' })}
+                value={education.school ? { label: education.school, value: education.school } : null}
+                placeholder="학교 검색 (예: 경희대학교)"
+                styles={selectStyles}
+                required
+              />
             </div>
             <div className="form-group">
               <label>전공</label>
-              {/* [수정] list 속성 삭제 */}
-              <input type="text" value={education.major} onChange={(e) => setEducation({ ...education, major: e.target.value })} required placeholder="예: 컴퓨터공학과" />
+              <Select
+                options={majorOptions}
+                onChange={(selected) => setEducation({ ...education, major: selected ? selected.value : '' })}
+                value={education.major ? { label: education.major, value: education.major } : null}
+                placeholder="전공 선택"
+                styles={selectStyles}
+                required
+              />
             </div>
             <div className="form-group">
               <label>학년</label>
@@ -214,7 +257,14 @@ function ProfileSetup() {
             </div>
             <div className="form-group">
               <label>목표 직무</label>
-              <input type="text" value={careerGoal} onChange={(e) => setCareerGoal(e.target.value)} required placeholder="예: AI 엔지니어" />
+              <Select
+                options={jobOptions}
+                onChange={(selected) => setCareerGoal(selected ? selected.value : '')}
+                value={careerGoal ? { label: careerGoal, value: careerGoal } : null}
+                placeholder="목표 직무 선택"
+                styles={selectStyles}
+                required
+              />
             </div>
           </div>
         </div>
@@ -222,16 +272,21 @@ function ProfileSetup() {
         {/* --- 2. 기술 스택 섹션 --- */}
         <div className="form-section">
           <h3>기술 스택</h3>
-          {/* [수정] UI 깨짐 문제 해결: 'form-grid skill-grid'로 변경 */}
           <div className="form-grid skill-grid">
             <div className="form-group">
               <label>기술 이름</label>
-              <input type="text" placeholder="예: React" value={currentSkill.name} onChange={(e) => setCurrentSkill({ ...currentSkill, name: e.target.value })} />
+              <Select
+                options={skillOptions}
+                onChange={(selected) => setCurrentSkill({ ...currentSkill, name: selected ? selected.value : '' })}
+                value={currentSkill.name ? { label: currentSkill.name, value: currentSkill.name } : null}
+                placeholder="기술 선택 (예: React)"
+                styles={selectStyles}
+              />
             </div>
             <div className="form-group">
               <label>수준</label>
               <CustomSelect
-                options={skillOptions}
+                options={levelOptions}
                 value={currentSkill.level}
                 onChange={(newValue) => setCurrentSkill({ ...currentSkill, level: newValue })}
               />
@@ -251,7 +306,6 @@ function ProfileSetup() {
         {/* --- 3. 주요 경험 섹션 --- */}
         <div className="form-section">
           <h3>주요 경험</h3>
-          {/* [수정] UI 깨짐 문제 해결: 'form-grid two-cols'로 변경 */}
           <div className="form-grid two-cols">
             <div className="form-group">
               <label>유형</label>
@@ -271,12 +325,23 @@ function ProfileSetup() {
             </div>
             <div className="form-group">
               <label>사용 기술</label>
-              <input type="text" placeholder="예: React, Spring" value={currentExperience.techStack} onChange={(e) => setCurrentExperience({ ...currentExperience, techStack: e.target.value })} />
+              <Select
+                isMulti
+                options={skillOptions}
+                onChange={(selectedOptions) => {
+                  const techString = selectedOptions ? selectedOptions.map(s => s.value).join(', ') : '';
+                  setCurrentExperience({ ...currentExperience, techStack: techString });
+                }}
+                value={
+                    currentExperience.techStack 
+                    ? currentExperience.techStack.split(',').map(s => s.trim()).filter(s=>s).map(s => ({ label: s, value: s }))
+                    : []
+                }
+                placeholder="사용 기술 선택 (다중 선택)"
+                styles={selectStyles}
+              />
             </div>
             
-            {/* [삭제] API 명세에 없는 URL 필드 삭제 */}
-            
-            {/* [수정] 버튼을 2칸 차지하도록 변경 */}
             <div className="form-group grid-col-span-2 grid-align-end">
               <button type="button" className="add-item-btn" onClick={handleAddExperience}>추가</button>
             </div>
@@ -284,7 +349,6 @@ function ProfileSetup() {
           <ul className="added-list">
             {experiences.map((exp, index) => (
               <li key={index} className="added-item">
-                {/* [수정] url 표시 삭제 */}
                 [{exp.type}] {exp.role} ({exp.period}) - {exp.techStack}
                 <button type="button" className="remove-item-btn" onClick={() => handleRemoveExperience(index)}>×</button>
               </li>
@@ -298,8 +362,15 @@ function ProfileSetup() {
           <div className="form-group">
             <label>자격증</label>
             <div className="input-group">
-              {/* [수정] list 속성 삭제 */}
-              <input type="text" placeholder="자격증 이름 (예: 정보처리기사)" value={currentCert} onChange={(e) => setCurrentCert(e.target.value)} />
+              <div style={{ flex: 1 }}>
+                  <Select
+                    options={certOptions}
+                    onChange={(selected) => setCurrentCert(selected ? selected.value : '')}
+                    value={currentCert ? { label: currentCert, value: currentCert } : null}
+                    placeholder="자격증 검색 및 선택"
+                    styles={selectStyles}
+                  />
+              </div>
               <button type="button" className="add-item-btn" onClick={handleAddCert}>추가</button>
             </div>
             <ul className="added-list">
