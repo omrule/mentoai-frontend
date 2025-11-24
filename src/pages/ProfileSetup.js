@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Select from 'react-select';
+import Select, { components } from 'react-select';
 import AsyncSelect from 'react-select/async';
 import apiClient from '../api/apiClient';
 import { useMetaData } from '../hooks/useMetaData';
@@ -30,6 +30,24 @@ const getAuthDataFromStorage = () => {
   } catch (e) {
     return { userId: null };
   }
+};
+
+// [수정] CustomSelect와 동일한 화살표 아이콘 컴포넌트
+const CustomDropdownIndicator = (props) => {
+  return (
+    <components.DropdownIndicator {...props}>
+      <div style={{
+        width: 0,
+        height: 0,
+        borderLeft: '5px solid transparent',
+        borderRight: '5px solid transparent',
+        borderTop: '6px solid #6c757d',
+        transform: props.selectProps.menuIsOpen ? 'rotate(180deg)' : 'none',
+        transition: 'transform 0.2s ease',
+        cursor: 'pointer'
+      }} />
+    </components.DropdownIndicator>
+  );
 };
 
 function ProfileSetup() {
@@ -200,8 +218,9 @@ function ProfileSetup() {
   const selectStyles = {
     control: (base, state) => ({
       ...base,
-      minHeight: '40px',
-      height: '40px',
+      minHeight: '40px', // 최소 높이
+      // [수정] height 고정 제거 - flex items center로 중앙 정렬 유도, wrap 시 늘어나도록
+      // height: '40px', 
       borderRadius: '8px',
       borderColor: state.isFocused ? '#1a73e8' : '#ccc',
       boxShadow: state.isFocused ? '0 0 0 2px rgba(26, 115, 232, 0.2)' : 'none',
@@ -213,8 +232,10 @@ function ProfileSetup() {
     }),
     valueContainer: (base) => ({
       ...base,
-      padding: '0 12px',
-      height: '40px',
+      padding: '2px 12px', // 패딩 조정
+      // [수정] 높이 강제 제거
+      // height: '40px',
+      minHeight: '38px', // control border 고려
       display: 'flex',
       alignItems: 'center'
     }),
@@ -257,8 +278,8 @@ function ProfileSetup() {
     }),
     dropdownIndicator: (base) => ({
         ...base,
-        color: '#6c757d',
         padding: '8px',
+        color: '#6c757d',
         '&:hover': {
             color: '#333'
         }
@@ -285,6 +306,7 @@ function ProfileSetup() {
                 value={education.school ? { label: education.school, value: education.school } : null}
                 placeholder="학교 검색 (예: 경희대학교)"
                 styles={selectStyles}
+                components={{ DropdownIndicator: CustomDropdownIndicator }}
                 required
               />
             </div>
@@ -296,6 +318,7 @@ function ProfileSetup() {
                 value={education.major ? { label: education.major, value: education.major } : null}
                 placeholder="전공 선택"
                 styles={selectStyles}
+                components={{ DropdownIndicator: CustomDropdownIndicator }}
                 required
               />
             </div>
@@ -315,6 +338,7 @@ function ProfileSetup() {
                 value={careerGoal ? { label: careerGoal, value: careerGoal } : null}
                 placeholder="목표 직무 선택"
                 styles={selectStyles}
+                components={{ DropdownIndicator: CustomDropdownIndicator }}
                 required
               />
             </div>
@@ -333,6 +357,7 @@ function ProfileSetup() {
                 value={currentSkill.name ? { label: currentSkill.name, value: currentSkill.name } : null}
                 placeholder="기술 선택 (예: React)"
                 styles={selectStyles}
+                components={{ DropdownIndicator: CustomDropdownIndicator }}
               />
             </div>
             <div className="form-group">
@@ -391,6 +416,7 @@ function ProfileSetup() {
                 }
                 placeholder="사용 기술 선택 (다중 선택)"
                 styles={selectStyles}
+                components={{ DropdownIndicator: CustomDropdownIndicator }}
               />
             </div>
             
@@ -421,6 +447,7 @@ function ProfileSetup() {
                     value={currentCert ? { label: currentCert, value: currentCert } : null}
                     placeholder="자격증 검색 및 선택"
                     styles={selectStyles}
+                    components={{ DropdownIndicator: CustomDropdownIndicator }}
                   />
               </div>
               <button type="button" className="add-item-btn" onClick={handleAddCert}>추가</button>
