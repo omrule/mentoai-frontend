@@ -383,18 +383,70 @@ function MyPage() {
 
   // 공통 Select 스타일
   const selectStyles = {
-    control: (base) => ({
+    control: (base, state) => ({
       ...base,
-      minHeight: '42px',
-      borderColor: '#ccc',
-      boxShadow: 'none',
+      minHeight: '40px',
+      height: '40px',
+      borderRadius: '8px',
+      borderColor: state.isFocused ? '#1a73e8' : '#ccc',
+      boxShadow: state.isFocused ? '0 0 0 2px rgba(26, 115, 232, 0.2)' : 'none',
       '&:hover': {
-        borderColor: '#888'
-      }
+        borderColor: state.isFocused ? '#1a73e8' : '#888'
+      },
+      fontSize: '15px',
+      backgroundColor: 'white'
+    }),
+    valueContainer: (base) => ({
+      ...base,
+      padding: '0 12px',
+      height: '40px',
+      display: 'flex',
+      alignItems: 'center'
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: '#888',
+      margin: 0
     }),
     menu: (base) => ({
         ...base,
+        borderRadius: '8px',
+        marginTop: '4px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
         zIndex: 9999
+    }),
+    option: (base, state) => ({
+      ...base,
+      padding: '10px',
+      backgroundColor: state.isSelected ? '#e7f3ff' : state.isFocused ? '#f1f3f5' : 'white',
+      color: state.isSelected ? '#007bff' : '#333',
+      fontWeight: state.isSelected ? '500' : 'normal',
+      cursor: 'pointer',
+      ':active': {
+        backgroundColor: '#e7f3ff'
+      }
+    }),
+    singleValue: (base) => ({
+        ...base,
+        color: '#333',
+        margin: 0
+    }),
+    input: (base) => ({
+        ...base,
+        margin: 0,
+        padding: 0,
+        color: '#333'
+    }),
+    indicatorSeparator: () => ({
+        display: 'none'
+    }),
+    dropdownIndicator: (base) => ({
+        ...base,
+        color: '#6c757d',
+        padding: '8px',
+        '&:hover': {
+            color: '#333'
+        }
     })
   };
 
