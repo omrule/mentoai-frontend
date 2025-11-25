@@ -100,7 +100,7 @@ function MyPage() {
               })));
             }
 
-            // certifications을 기존 형식으로 변환
+            // certifications을 기존 형식으로 변환.
             if (profile.certifications) {
               setEvidence({
                 certifications: profile.certifications.map(cert => cert.name)
