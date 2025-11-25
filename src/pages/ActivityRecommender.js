@@ -111,19 +111,12 @@ function ActivityRecommender() {
     setRoleFitData(null);
 
     try {
-      // 2-1. RoleFitScore 계산
-      // 공고의 title 등을 target으로 사용
-      const targetJobTitle = job.title; 
-      console.log(`[ActivityRecommender] '${targetJobTitle}'에 대한 분석 시작`);
+      // 2-1. RoleFitScore 계산 (수정: GET /job-postings/{jobId}/score)
+      console.log(`[ActivityRecommender] 공고 #${job.jobId}에 대한 분석 시작`);
 
-      const roleFitRequestBody = {
-        target: targetJobTitle,
-        topNImprovements: 5
-      };
-
-      const roleFitResponse = await apiClient.post(
-        `/users/${userId}/role-fit`,
-        roleFitRequestBody
+      const roleFitResponse = await apiClient.get(
+        `/job-postings/${job.jobId}/score`,
+        { params: { userId } }
       );
 
       console.log('[ActivityRecommender] RoleFit 결과:', roleFitResponse.data);
@@ -131,18 +124,19 @@ function ActivityRecommender() {
       if (roleFitResponse.data) {
         setRoleFitData(roleFitResponse.data);
         setUserScore(roleFitResponse.data.roleFitScore);
-        // API가 targetJobScore를 반환한다고 가정 (없으면 90점으로 고정)
         setTargetScore(roleFitResponse.data.targetJobScore || 90);
       }
 
       // 2-2. 추천 공모전/대회 (Improvements) 조회
-      // roleFitResponse.data.target (직무 ID 또는 이름) 사용
-      if (roleFitResponse.data?.target) {
+      // API 응답의 target 또는 공고의 targetRoles 활용
+      const targetRoleId = roleFitResponse.data?.target || job.targetRoles?.[0]?.targetRoleId;
+
+      if (targetRoleId) {
         const improvementsResponse = await apiClient.get(
           `/users/${userId}/improvements`,
           {
             params: {
-              roleId: roleFitResponse.data.target,
+              roleId: targetRoleId,
               size: 5
             }
           }
@@ -153,7 +147,7 @@ function ActivityRecommender() {
 
     } catch (error) {
       console.error('[ActivityRecommender] 분석 실패:', error);
-      alert('공고 분석 중 오류가 발생했습니다.');
+      // alert('공고 분석 중 오류가 발생했습니다.'); // 사용자 경험을 위해 alert 제거하거나 토스트로 변경 권장
     } finally {
       setIsAnalyzing(false);
     }
