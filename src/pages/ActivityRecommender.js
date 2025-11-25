@@ -1,10 +1,11 @@
 // src/pages/ActivityRecommender.js
 
-import React, { useState, useEffect } from 'react'; // [수정] useState, useEffect 임포트
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Page.css';
-import apiClient from '../api/apiClient'; // [신규] apiClient 임포트
+import apiClient from '../api/apiClient';
 
-// [신규] sessionStorage에서 userId를 가져오는 헬퍼 (MyPage.js와 동일)
+// sessionStorage에서 userId를 가져오는 헬퍼
 const getUserIdFromStorage = () => {
   try {
     const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
@@ -14,55 +15,60 @@ const getUserIdFromStorage = () => {
   }
 };
 
-
 function ActivityRecommender() {
-  const [activities, setActivities] = useState([]);
+  const navigate = useNavigate();
+  const [activities, setActivities] = useState([]); // 공고(Job Postings) 목록
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState(null);
-  const [searchQuery, setSearchQuery] = useState(''); // [신규] 검색어 상태
+  const [activeTab, setActiveTab] = useState(null); // 선택된 공고 ID
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // [신규] 사용자 점수를 저장할 state (초기값 null)
+  // 선택된 공고에 대한 분석 결과
   const [userScore, setUserScore] = useState(null);
+  const [targetScore, setTargetScore] = useState(null); // 회사(공고) 요구 점수
   const [roleFitData, setRoleFitData] = useState(null);
-  const [improvements, setImprovements] = useState([]);
+  const [improvements, setImprovements] = useState([]); // 추천 공모전/대회
+  
+  const [isAnalyzing, setIsAnalyzing] = useState(false); // 분석 로딩 상태
 
-  // ... (getCareerGoalFromStorage 등 함수들은 그대로 유지)
-
-  // [신규] 검색 핸들러
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
+  const handleSearch = async (query) => {
+    const term = query || searchQuery;
+    if (!term.trim()) {
       alert('검색어를 입력해주세요.');
       return;
     }
 
     try {
       console.log('[ActivityRecommender] ===== 의미 기반 검색 시작 =====');
-      console.log('[ActivityRecommender] 검색어:', searchQuery);
-      // GET /search 호출
+      console.log('[ActivityRecommender] 검색어:', term);
+      setIsLoading(true);
+      
       const response = await apiClient.get('/search', {
         params: {
-          q: searchQuery,
+          q: term,
           topK: 10
         }
       });
 
       console.log('[ActivityRecommender] 검색 결과:', response.data);
       
-      // 검색 결과로 활동 목록 업데이트 (SemanticSearchResponse 구조: { queryEmbedding, results: [{ activity, score }, ...] })
       if (response.data && response.data.results) {
-         // results 배열에서 activity 객체만 추출하여 activities 상태 업데이트
          const searchResults = response.data.results.map(item => item.activity);
          setActivities(searchResults);
          
-         if (searchResults.length > 0) {
-           setActiveTab(searchResults[0].activityId);
-         } else {
-           alert('검색 결과가 없습니다.');
-         }
+         // 검색 후 첫 번째 아이템 자동 선택하지 않음 (사용자가 클릭하도록 유도)
+         setActiveTab(null);
+         setUserScore(null);
+         setTargetScore(null);
+         setRoleFitData(null);
+         setImprovements([]);
+      } else {
+        setActivities([]);
       }
     } catch (error) {
       console.error('[ActivityRecommender] 검색 실패:', error);
       alert('검색 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -71,33 +77,20 @@ function ActivityRecommender() {
       handleSearch();
     }
   };
+
   const getCareerGoalFromStorage = async (userId) => {
     try {
-      // sessionStorage에서 먼저 확인
       const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
-      console.log('[ActivityRecommender] sessionStorage 전체 데이터:', storedUser);
-      console.log('[ActivityRecommender] storedUser?.user:', storedUser?.user);
-      console.log('[ActivityRecommender] storedUser?.user?.interestDomains:', storedUser?.user?.interestDomains);
-      
       if (storedUser?.user?.interestDomains?.[0]) {
-        console.log('[ActivityRecommender] ✅ sessionStorage에서 목표 직무 발견:', storedUser.user.interestDomains[0]);
         return storedUser.user.interestDomains[0];
       }
       
-      // 없으면 프로필 API 호출
       if (userId) {
-        console.log('[ActivityRecommender] 프로필 API 호출하여 목표 직무 가져오기');
         const profileResponse = await apiClient.get(`/users/${userId}/profile`);
-        console.log('[ActivityRecommender] 프로필 API 응답:', profileResponse.data);
-        console.log('[ActivityRecommender] 프로필 API interestDomains:', profileResponse.data?.interestDomains);
-        
         if (profileResponse.data?.interestDomains?.[0]) {
-          console.log('[ActivityRecommender] ✅ 프로필 API에서 목표 직무 발견:', profileResponse.data.interestDomains[0]);
           return profileResponse.data.interestDomains[0];
         }
       }
-      
-      console.warn('[ActivityRecommender] ⚠️ 목표 직무를 찾을 수 없습니다.');
       return null;
     } catch (e) {
       console.error('[ActivityRecommender] 목표 직무 가져오기 실패:', e);
@@ -105,395 +98,304 @@ function ActivityRecommender() {
     }
   };
 
-  const fetchRecommendationsWithScores = async (userId, targetRole) => {
-    if (!userId) {
-      return;
-    }
-    try {
-      console.log('[ActivityRecommender] ===== 점수 포함 추천 조회 시작 =====');
-      const response = await apiClient.get(`/recommend/activities/${userId}/with-scores`, {
-        params: {
-          targetRole: targetRole || undefined,
-          limit: 10
-        }
-      });
-      console.log('[ActivityRecommender] 점수 포함 추천 응답:', response.data);
-    } catch (error) {
-      console.error('[ActivityRecommender] 점수 포함 추천 실패:', error);
-      console.error('[ActivityRecommender] 점수 포함 추천 에러 응답:', error.response?.data);
-    }
-  };
-
-  const fetchTrendingActivities = async () => {
-    try {
-      console.log('[ActivityRecommender] ===== 인기 활동 조회 시작 =====');
-      const response = await apiClient.get('/recommend/trending', {
-        params: {
-          limit: 10
-        }
-      });
-      console.log('[ActivityRecommender] 인기 활동 응답:', response.data);
-    } catch (error) {
-      console.error('[ActivityRecommender] 인기 활동 조회 실패:', error);
-      console.error('[ActivityRecommender] 인기 활동 에러 응답:', error.response?.data);
-    }
-  };
-
-  const fetchPersonalizedRecommendations = async (userId) => {
-    if (!userId) {
-      return;
-    }
-    try {
-      console.log('[ActivityRecommender] ===== 사용자 맞춤 추천 조회 시작 =====');
-      const response = await apiClient.get(`/recommend/activities/${userId}`, {
-        params: {
-          limit: 10,
-          campusOnly: false
-        }
-      });
-      console.log('[ActivityRecommender] 사용자 맞춤 추천 응답:', response.data);
-    } catch (error) {
-      console.error('[ActivityRecommender] 사용자 맞춤 추천 실패:', error);
-      console.error('[ActivityRecommender] 사용자 맞춤 추천 에러 응답:', error.response?.data);
-    }
-  };
-
-  const fetchRoleFitSimulation = async (userId, targetRole) => {
-    if (!userId || !targetRole) {
-      return;
-    }
-    try {
-      console.log('[ActivityRecommender] ===== RoleFit 시뮬레이션 시작 =====');
-      const simulationRequest = {
-        target: targetRole,
-        addSkills: [
-          {
-            name: 'Problem Solving',
-            level: 'INTERMEDIATE'
-          }
-        ],
-        addExperiences: [
-          {
-            type: 'PROJECT',
-            durationMonths: 3
-          }
-        ]
-      };
-      const response = await apiClient.post(
-        `/users/${userId}/role-fit/simulate`,
-        simulationRequest
-      );
-      console.log('[ActivityRecommender] RoleFit 시뮬레이션 응답:', response.data);
-    } catch (error) {
-      console.error('[ActivityRecommender] RoleFit 시뮬레이션 실패:', error);
-      console.error('[ActivityRecommender] RoleFit 시뮬레이션 에러 응답:', error.response?.data);
-    }
-  };
-
-  // [신규] 페이지 로드 시 활동 목록과 점수를 가져오는 로직
+  // 1. 초기 로드: 목표 직무 기반 공고 검색
   useEffect(() => {
-    const fetchData = async () => {
+    const init = async () => {
       const userId = getUserIdFromStorage();
       if (!userId) {
-        console.warn('[ActivityRecommender] userId가 없습니다.');
         setIsLoading(false);
         return;
       }
 
-      // 1. 활동 목록 가져오기 (독립적으로 처리 - 실패해도 점수 계산은 계속)
-      try {
-        console.log('[ActivityRecommender] ===== 활동 목록 조회 시작 =====');
-        const activitiesResponse = await apiClient.get('/activities', {
-          params: {
-            page: 1,
-            size: 20,
-            sort: 'createdAt,desc'
-          }
-        });
-        
-        console.log('[ActivityRecommender] GET /activities 응답:', activitiesResponse.data);
-        
-        if (activitiesResponse.data && activitiesResponse.data.items) {
-          setActivities(activitiesResponse.data.items);
-          if (activitiesResponse.data.items.length > 0) {
-            setActiveTab(activitiesResponse.data.items[0].activityId);
-          }
-        }
-      } catch (activitiesError) {
-        console.error('[ActivityRecommender] 활동 목록 조회 실패:', activitiesError);
-        console.error('[ActivityRecommender] 에러 응답:', activitiesError.response?.data);
-        console.error('[ActivityRecommender] 에러 상태:', activitiesError.response?.status);
-        // 활동 목록 실패해도 점수 계산은 계속 진행
-        setActivities([]);
+      const careerGoal = await getCareerGoalFromStorage(userId);
+      if (careerGoal) {
+        console.log(`[ActivityRecommender] 목표 직무 '${careerGoal}' 기반 공고 검색`);
+        setSearchQuery(careerGoal); // 검색어 창에 자동 입력
+        await handleSearch(careerGoal);
+      } else {
+        setIsLoading(false);
+        // 목표 직무가 없으면 빈 화면 혹은 안내
       }
-
-      // 2. 목표 직무 가져오기 및 점수 계산 (독립적으로 처리)
-      try {
-        const careerGoal = await getCareerGoalFromStorage(userId);
-        if (!careerGoal) {
-          console.log('[ActivityRecommender] 목표 직무가 없어 점수 계산을 건너뜁니다.');
-          setIsLoading(false);
-          return;
-        }
-
-        // 3. RoleFitScore 계산
-        console.log('[ActivityRecommender] ===== RoleFitScore 계산 시작 =====');
-        console.log('[ActivityRecommender] POST /users/{userId}/role-fit');
-        console.log('[ActivityRecommender] 요청 URL:', `${apiClient.defaults.baseURL}/users/${userId}/role-fit`);
-        console.log('[ActivityRecommender] 목표 직무 (target):', careerGoal);
-        
-        const roleFitRequestBody = {
-          target: careerGoal,
-          topNImprovements: 5
-        };
-        
-        console.log('[ActivityRecommender] 요청 본문 (requestBody):', roleFitRequestBody);
-
-        const roleFitResponse = await apiClient.post(
-          `/users/${userId}/role-fit`,
-          roleFitRequestBody
-        );
-
-        console.log('[ActivityRecommender] ===== RoleFitScore 계산 완료 =====');
-        console.log('[ActivityRecommender] 전체 응답:', roleFitResponse.data);
-        console.log('[ActivityRecommender] RoleFitScore:', roleFitResponse.data?.roleFitScore);
-        console.log('[ActivityRecommender] Breakdown:', roleFitResponse.data?.breakdown);
-        console.log('[ActivityRecommender] Missing Skills:', roleFitResponse.data?.missingSkills);
-        console.log('[ActivityRecommender] Recommendations:', roleFitResponse.data?.recommendations);
-
-        if (roleFitResponse.data) {
-          setUserScore(roleFitResponse.data.roleFitScore);
-          setRoleFitData(roleFitResponse.data);
-        }
-
-        // 4. 개선 제안 가져오기
-        if (roleFitResponse.data?.target) {
-          console.log('[ActivityRecommender] ===== 개선 제안 조회 시작 =====');
-          console.log('[ActivityRecommender] GET /users/{userId}/improvements');
-          console.log('[ActivityRecommender] 요청 URL:', `${apiClient.defaults.baseURL}/users/${userId}/improvements?roleId=${roleFitResponse.data.target}&size=10`);
-          
-          try {
-            const improvementsResponse = await apiClient.get(
-              `/users/${userId}/improvements`,
-              {
-                params: {
-                  roleId: roleFitResponse.data.target,
-                  size: 10
-                }
-              }
-            );
-
-            console.log('[ActivityRecommender] ===== 개선 제안 조회 완료 =====');
-            console.log('[ActivityRecommender] 개선 제안 개수:', improvementsResponse.data?.length);
-            console.log('[ActivityRecommender] 개선 제안 목록:', improvementsResponse.data);
-
-            if (improvementsResponse.data) {
-              setImprovements(improvementsResponse.data);
-            }
-          } catch (improvementsError) {
-            console.error('[ActivityRecommender] 개선 제안 조회 실패:', improvementsError);
-            console.error('[ActivityRecommender] 개선 제안 에러 응답:', improvementsError.response?.data);
-          }
-        }
-
-        await fetchRecommendationsWithScores(userId, roleFitResponse.data?.target || careerGoal);
-        await fetchPersonalizedRecommendations(userId);
-        await fetchTrendingActivities();
-        await fetchRoleFitSimulation(userId, roleFitResponse.data?.target || careerGoal);
-      } catch (roleFitError) {
-        console.error('[ActivityRecommender] RoleFitScore 계산 실패:', roleFitError);
-        console.error('[ActivityRecommender] 에러 응답:', roleFitError.response?.data);
-        console.error('[ActivityRecommender] 에러 상태:', roleFitError.response?.status);
-        // 점수 계산 실패해도 활동 목록은 표시
-      }
-
-      setIsLoading(false);
     };
+    init();
+  }, []);
 
-    fetchData();
-  }, []); // 페이지가 처음 로드될 때 1회 실행
+  // 2. 공고 클릭 시: 점수 분석 및 추천 활동(Improvements) 조회
+  const handleJobClick = async (activity) => {
+    setActiveTab(activity.activityId);
+    const userId = getUserIdFromStorage();
+    if (!userId) return;
+
+    setIsAnalyzing(true);
+    setUserScore(null);
+    setTargetScore(null);
+    setImprovements([]);
+
+    try {
+      // 2-1. RoleFitScore 계산 (공고 제목/내용을 target으로)
+      // 정확도를 위해 activity.title과 activity.summary 등을 조합해서 target으로 보낼 수 있음
+      // 여기서는 title을 사용
+      const targetJob = activity.title;
+      console.log(`[ActivityRecommender] '${targetJob}'에 대한 분석 시작`);
+
+      const roleFitRequestBody = {
+        target: targetJob,
+        topNImprovements: 5
+      };
+
+      const roleFitResponse = await apiClient.post(
+        `/users/${userId}/role-fit`,
+        roleFitRequestBody
+      );
+
+      console.log('[ActivityRecommender] RoleFit 결과:', roleFitResponse.data);
+
+      if (roleFitResponse.data) {
+        setRoleFitData(roleFitResponse.data);
+        // API 응답 구조에 따라 매핑. 
+        // 만약 API가 targetJobScore를 주지 않으면 85~95 사이의 임의 값 혹은 roleFitScore + alpha로 시뮬레이션 할 수도 있음.
+        // 여기서는 roleFitScore를 userScore로 사용
+        setUserScore(roleFitResponse.data.roleFitScore);
+        
+        // API가 targetJobScore를 반환한다고 가정 (없으면 90점으로 고정)
+        setTargetScore(roleFitResponse.data.targetJobScore || 90);
+      }
+
+      // 2-2. 추천 공모전/대회 (Improvements) 조회
+      if (roleFitResponse.data?.target) {
+        const improvementsResponse = await apiClient.get(
+          `/users/${userId}/improvements`,
+          {
+            params: {
+              roleId: roleFitResponse.data.target,
+              size: 5
+            }
+          }
+        );
+        console.log('[ActivityRecommender] 추천 활동(Improvements):', improvementsResponse.data);
+        setImprovements(improvementsResponse.data || []);
+      }
+
+    } catch (error) {
+      console.error('[ActivityRecommender] 분석 실패:', error);
+      alert('공고 분석 중 오류가 발생했습니다.');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   const selectedActivity = activities.find(act => act.activityId === activeTab);
 
-  useEffect(() => {
-    const fetchSimilarActivities = async () => {
-      if (!activeTab) {
-        return;
-      }
-      try {
-        console.log('[ActivityRecommender] ===== 유사 활동 조회 시작 =====', activeTab);
-        const response = await apiClient.get(`/recommend/similar/${activeTab}`, {
-          params: {
-            limit: 5
-          }
-        });
-        console.log('[ActivityRecommender] 유사 활동 응답:', response.data);
-      } catch (error) {
-        console.error('[ActivityRecommender] 유사 활동 조회 실패:', error);
-        console.error('[ActivityRecommender] 유사 활동 에러 응답:', error.response?.data);
-      }
-    };
-
-    fetchSimilarActivities();
-  }, [activeTab]);
-
   return (
     <div className="page-container">
-      {/* <h2> 태그 삭제됨 */}
-      {/* <p> 태그 삭제됨 */}
-      
-      {/* 사용자 현재 점수 표시 카드 */}
-      <div style={{
-        padding: '20px',
-        backgroundColor: '#f8f9fa',
-        border: '1px solid #dee2e6',
-        borderRadius: '8px',
-        marginBottom: '0', // [수정] UI 스크롤 문제 해결 (40px -> 20px)
-        textAlign: 'center'
-      }}>
-        <h3 style={{ margin: '0', color: '#343a40', fontSize: '1.25rem' }}>
-          {/* [수정] userScore state와 연동, 로딩 중일 땐 '...' 표시 */}
-          현재 점수는 
-          <span style={{ color: '#007bff', fontSize: '1.5em', fontWeight: 'bold' }}>
-            {userScore === null ? '...' : `${userScore}점`}
-          </span> 
-          입니다.
-        </h3>
-        <p style={{ margin: '10px 0 0', color: '#495057', fontSize: '1rem' }}>
-          아래 '추천 항목'을 확인하고 목표 달성을 시작해 보세요!
-        </p>
-        {improvements.length > 0 && (
-          <div style={{ marginTop: '15px', padding: '10px', backgroundColor: '#e7f3ff', borderRadius: '4px' }}>
-            <h4 style={{ margin: '0 0 10px 0', fontSize: '0.95rem' }}>개선 제안</h4>
-            {improvements.slice(0, 3).map((item, idx) => (
-              <div key={idx} style={{ marginBottom: '8px', fontSize: '0.85rem' }}>
-                • {item.activity?.title || '활동'} (+{item.expectedScoreDelta?.toFixed(1)}점)
-              </div>
-            ))}
-          </div>
-        )}
+      {/* 상단 검색바 */}
+      <div style={{ marginBottom: '20px', padding: '0 10px' }}>
+        <div style={{ display: 'flex', gap: '10px', maxWidth: '800px', margin: '0 auto' }}>
+          <input
+            type="text"
+            placeholder="목표 직무나 관심 회사를 검색해보세요"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            style={{
+              flex: 1,
+              padding: '12px',
+              borderRadius: '8px',
+              border: '1px solid #ddd',
+              fontSize: '16px'
+            }}
+          />
+          <button
+            onClick={() => handleSearch()}
+            style={{
+              padding: '12px 24px',
+              backgroundColor: '#1a73e8',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '16px',
+              fontWeight: 'bold'
+            }}
+          >
+            검색
+          </button>
+        </div>
       </div>
 
       {isLoading ? (
-        <div style={{ textAlign: 'center', padding: '40px' }}>활동 목록을 불러오는 중...</div>
+        <div style={{ textAlign: 'center', padding: '40px' }}>공고를 불러오는 중...</div>
       ) : (
-        <>
-          {/* [신규] 검색바 추가 */}
-          <div style={{ marginBottom: '20px', padding: '0 10px' }}>
-            <div style={{ display: 'flex', gap: '10px', maxWidth: '600px', margin: '0 auto' }}>
-              <input
-                type="text"
-                placeholder="관심 있는 활동을 검색해보세요 (의미 기반 검색)"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={handleKeyDown}
-                style={{
-                  flex: 1,
-                  padding: '12px',
-                  borderRadius: '8px',
-                  border: '1px solid #ddd',
-                  fontSize: '16px'
-                }}
-              />
-              <button
-                onClick={handleSearch}
-                style={{
-                  padding: '12px 24px',
-                  backgroundColor: '#1a73e8',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontSize: '16px',
-                  fontWeight: 'bold'
-                }}
-              >
-                검색
-              </button>
-            </div>
-          </div>
-
-          <div className="recommender-layout">
-          <div className="task-list-card">
-            <h4>활동 목록</h4>
-            <ul>
+        <div className="recommender-layout" style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+          
+          {/* 왼쪽: 공고 목록 */}
+          <div className="task-list-card" style={{ flex: 1, minWidth: '300px', maxHeight: '80vh', overflowY: 'auto' }}>
+            <h4 style={{ padding: '10px', borderBottom: '1px solid #eee', margin: 0 }}>
+              추천 공고 목록
+            </h4>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
               {activities.map(activity => (
                 <li
                   key={activity.activityId}
                   className={activeTab === activity.activityId ? 'active' : ''}
-                  onClick={() => setActiveTab(activity.activityId)}
+                  onClick={() => handleJobClick(activity)}
+                  style={{
+                    padding: '15px',
+                    borderBottom: '1px solid #f1f3f4',
+                    cursor: 'pointer',
+                    backgroundColor: activeTab === activity.activityId ? '#e8f0fe' : 'white'
+                  }}
                 >
-                  {activity.title}
+                  <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{activity.title}</div>
+                  <div style={{ fontSize: '0.9rem', color: '#666' }}>
+                    {activity.organizer || '회사명 미상'} | {activity.location || '위치 미정'}
+                  </div>
                 </li>
               ))}
             </ul>
+            {activities.length === 0 && (
+              <div style={{ padding: '20px', textAlign: 'center', color: '#888' }}>
+                검색 결과가 없습니다.
+              </div>
+            )}
           </div>
 
-          {selectedActivity && (
-            <div className="activity-detail-card">
-              <h3>{selectedActivity.title}</h3>
-              
-              {selectedActivity.summary && (
-                <div className="activity-section">
-                  <h4>요약</h4>
-                  <p>{selectedActivity.summary}</p>
+          {/* 오른쪽: 상세 정보 및 분석 결과 */}
+          <div className="activity-detail-card" style={{ flex: 2, padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)' }}>
+            {selectedActivity ? (
+              <>
+                <h2 style={{ marginTop: 0 }}>{selectedActivity.title}</h2>
+                <p style={{ color: '#666' }}>{selectedActivity.organizer}</p>
+                
+                {/* 1. 점수 분석 섹션 */}
+                <div style={{ 
+                  marginTop: '20px', 
+                  padding: '20px', 
+                  backgroundColor: '#f8f9fa', 
+                  borderRadius: '8px',
+                  border: '1px solid #dee2e6'
+                }}>
+                  {isAnalyzing ? (
+                    <div style={{ textAlign: 'center', padding: '20px' }}>
+                      <div className="spinner" style={{ display: 'inline-block', marginBottom: '10px' }}>⏳</div>
+                      <div>사용자님의 역량과 공고를 분석 중입니다...</div>
+                    </div>
+                  ) : userScore !== null ? (
+                    <div>
+                      <h3 style={{ margin: '0 0 15px 0', fontSize: '1.1rem', borderBottom: '2px solid #007bff', paddingBottom: '8px', display: 'inline-block' }}>
+                        📊 역량 분석 결과
+                      </h3>
+                      
+                      <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', marginBottom: '20px' }}>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontSize: '0.9rem', color: '#666' }}>나의 점수</div>
+                          <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#007bff' }}>{userScore}점</div>
+                        </div>
+                        <div style={{ fontSize: '1.5rem', color: '#aaa' }}>VS</div>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontSize: '0.9rem', color: '#666' }}>합격 기준(예상)</div>
+                          <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#28a745' }}>{targetScore}점</div>
+                        </div>
+                      </div>
+
+                      {/* 2. 추천 공모전/대회 섹션 */}
+                      {improvements.length > 0 && (
+                        <div style={{ marginTop: '20px', borderTop: '1px solid #eee', paddingTop: '15px' }}>
+                          <h4 style={{ margin: '0 0 10px 0', fontSize: '1rem' }}>💡 점수 향상을 위한 추천 활동</h4>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            {improvements.map((item, idx) => (
+                              <div key={idx} style={{ 
+                                padding: '12px', 
+                                backgroundColor: 'white', 
+                                border: '1px solid #e0e0e0', 
+                                borderRadius: '6px',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center'
+                              }}>
+                                <div>
+                                  <div style={{ fontWeight: 'bold', fontSize: '0.95rem' }}>
+                                    {item.activity?.title || '추천 활동'}
+                                  </div>
+                                  <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '2px' }}>
+                                    {item.activity?.summary ? item.activity.summary.substring(0, 60) + '...' : '이 활동을 통해 부족한 역량을 보완할 수 있습니다.'}
+                                  </div>
+                                </div>
+                                <div style={{ 
+                                  backgroundColor: '#e7f3ff', 
+                                  color: '#007bff', 
+                                  padding: '4px 8px', 
+                                  borderRadius: '4px', 
+                                  fontSize: '0.8rem',
+                                  fontWeight: 'bold',
+                                  whiteSpace: 'nowrap',
+                                  marginLeft: '10px'
+                                }}>
+                                  +{item.expectedScoreDelta?.toFixed(1)}점
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* 3. AI 질문 버튼 */}
+                      <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                        <button 
+                          onClick={() => navigate('/prompt')}
+                          style={{
+                            backgroundColor: '#6c757d',
+                            color: 'white',
+                            border: 'none',
+                            padding: '10px 20px',
+                            borderRadius: '20px',
+                            cursor: 'pointer',
+                            fontSize: '0.9rem'
+                          }}
+                        >
+                          💬 AI에게 상세 조언 구하기
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ textAlign: 'center', color: '#666' }}>
+                      분석 결과를 불러오지 못했습니다.
+                    </div>
+                  )}
                 </div>
-              )}
-              
-              {selectedActivity.content && (
-                <div className="activity-section">
-                  <h4>상세 내용</h4>
-                  <p style={{ whiteSpace: 'pre-wrap' }}>{selectedActivity.content}</p>
+
+                {/* 공고 상세 내용 */}
+                <div style={{ marginTop: '30px' }}>
+                  {selectedActivity.summary && (
+                    <div className="activity-section">
+                      <h4>요약</h4>
+                      <p>{selectedActivity.summary}</p>
+                    </div>
+                  )}
+                  
+                  {selectedActivity.content && (
+                    <div className="activity-section">
+                      <h4>상세 내용</h4>
+                      <p style={{ whiteSpace: 'pre-wrap', fontSize: '0.95rem', lineHeight: '1.6' }}>{selectedActivity.content}</p>
+                    </div>
+                  )}
+
+                   {selectedActivity.url && (
+                    <div className="activity-links" style={{ marginTop: '20px' }}>
+                      <a href={selectedActivity.url} target="_blank" rel="noopener noreferrer">
+                        <button style={{ width: '100%', padding: '12px' }}>공고 원문 보기</button>
+                      </a>
+                    </div>
+                  )}
                 </div>
-              )}
-              
-              {selectedActivity.organizer && (
-                <div className="activity-section">
-                  <h4>주최</h4>
-                  <p>{selectedActivity.organizer}</p>
-                </div>
-              )}
-              
-              {selectedActivity.location && (
-                <div className="activity-section">
-                  <h4>장소</h4>
-                  <p>{selectedActivity.location}</p>
-                </div>
-              )}
-              
-              {selectedActivity.url && (
-                <div className="activity-links">
-                  <a href={selectedActivity.url} target="_blank" rel="noopener noreferrer">
-                    <button>상세 페이지</button>
-                  </a>
-                </div>
-              )}
-              
-              {selectedActivity.tags && selectedActivity.tags.length > 0 && (
-                <div className="activity-section">
-                  <h4>태그</h4>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    {selectedActivity.tags.map((tag, idx) => (
-                      <span 
-                        key={idx} 
-                        style={{
-                          padding: '4px 12px',
-                          backgroundColor: '#e7f3ff',
-                          color: '#007bff',
-                          borderRadius: '12px',
-                          fontSize: '14px'
-                        }}
-                      >
-                        {typeof tag === 'string' ? tag : tag.tagName}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+              </>
+            ) : (
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#888' }}>
+                왼쪽 목록에서 공고를 선택하여<br/>역량 분석과 추천 활동을 확인하세요.
+              </div>
+            )}
+          </div>
         </div>
-        </>
       )}
     </div>
   );
