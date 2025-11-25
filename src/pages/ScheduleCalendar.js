@@ -32,13 +32,18 @@ function ScheduleCalendar() {
       try {
         const userId = getUserIdFromStorage();
         if (!userId) {
-          console.warn("사용자 ID를 찾을 수 없습니다.");
+          console.warn("[ScheduleCalendar] 사용자 ID를 찾을 수 없습니다.");
           setIsLoading(false);
           return;
         }
 
+        console.log('[ScheduleCalendar] 이벤트 조회 시작...');
+        
         // GET /users/{userId}/calendar/events API 호출
+        // 명세서: startDate, endDate 파라미터 선택사항 (현재 월 전체 조회를 위해 생략 가능)
         const response = await apiClient.get(`/users/${userId}/calendar/events`);
+        
+        console.log('[ScheduleCalendar] 이벤트 응답:', response.data);
         
         if (response.data && Array.isArray(response.data)) {
           // CalendarEvent를 캘린더 표시 형식으로 변환
@@ -59,11 +64,14 @@ function ScheduleCalendar() {
           });
           
           setEvents(formattedEvents);
+          console.log('[ScheduleCalendar] ✅ 이벤트 로드 완료:', formattedEvents.length + '개');
         }
       } catch (error) {
-        console.error("캘린더 이벤트 로딩 실패:", error);
+        console.error("[ScheduleCalendar] ❌ 캘린더 이벤트 로딩 실패:", error);
+        console.error("[ScheduleCalendar] 에러 상세:", error.response?.data || error.message);
+        
         if (error.response?.status !== 404) {
-          console.error("이벤트 로딩 중 오류:", error.message);
+          console.error("[ScheduleCalendar] 이벤트 로딩 중 오류:", error.message);
         }
         // 에러 시 빈 배열로 설정
         setEvents([]);
@@ -209,18 +217,47 @@ function ScheduleCalendar() {
       }
 
       if (selectedEvent) {
-        // '수정' 모드 - 현재는 API에 수정 엔드포인트가 없으므로 로컬 상태만 업데이트
-        setEvents(events.map(ev => 
-          ev.id === selectedEvent.id ? { ...ev, title: newEvent.title, date: newEvent.date } : ev
-        ));
-        alert("이벤트 수정 기능은 현재 지원되지 않습니다.");
+        // '수정' 모드 - PUT /users/{userId}/calendar/events/{eventId}
+        const eventData = {
+          eventType: 'CUSTOM', // 필수 (명세서)
+          startAt: new Date(newEvent.date).toISOString(),
+          endAt: newEvent.date ? new Date(newEvent.date).toISOString() : undefined,
+          alertMinutes: 1440
+        };
+
+        const response = await apiClient.put(
+          `/users/${userId}/calendar/events/${selectedEvent.eventId}`,
+          eventData
+        );
+
+        // 응답 데이터로 로컬 상태 업데이트
+        if (response.data) {
+          const updatedEvent = response.data;
+          const startDate = new Date(updatedEvent.startAt);
+          const dateString = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
+          
+          const formattedEvent = {
+            id: updatedEvent.eventId,
+            date: dateString,
+            title: newEvent.title,
+            startAt: updatedEvent.startAt,
+            endAt: updatedEvent.endAt,
+            activityId: updatedEvent.activityId,
+            eventId: updatedEvent.eventId
+          };
+          
+          setEvents(events.map(ev => 
+            ev.id === selectedEvent.id ? formattedEvent : ev
+          ));
+        }
       } else {
         // '추가' 모드 - POST /users/{userId}/calendar/events
         const eventData = {
-          activityId: newEvent.activityId || null, // 활동 ID가 없으면 null
-          startAt: new Date(newEvent.date).toISOString(), // 날짜를 ISO 형식으로 변환
+          eventType: 'CUSTOM', // 필수 (명세서)
+          activityId: newEvent.activityId || undefined,
+          startAt: new Date(newEvent.date).toISOString(),
           endAt: newEvent.date ? new Date(newEvent.date).toISOString() : undefined,
-          alertMinutes: 1440 // 기본값: 24시간 전 알림
+          alertMinutes: 1440
         };
 
         const response = await apiClient.post(
@@ -251,17 +288,33 @@ function ScheduleCalendar() {
       closeModal();
     } catch (error) {
       console.error("이벤트 저장 실패:", error);
-      alert(`이벤트 저장 중 오류가 발생했습니다: ${error.message}`);
+      console.error("에러 응답:", error.response?.data);
+      alert(`이벤트 저장 중 오류가 발생했습니다: ${error.response?.data?.message || error.message}`);
     }
   };
 
-  // --- [신규] 삭제 로직 ---
-  const handleDeleteEvent = () => {
+  // --- [신규] 삭제 로직 - API 통합 ---
+  const handleDeleteEvent = async () => {
     if (!selectedEvent) return;
 
     if (window.confirm(`'${selectedEvent.title}' 일정을 삭제하시겠습니까?`)) {
-      setEvents(events.filter(ev => ev.id !== selectedEvent.id));
-      closeModal();
+      try {
+        const userId = getUserIdFromStorage();
+        if (!userId) {
+          throw new Error("인증 정보가 없습니다.");
+        }
+
+        // DELETE /users/{userId}/calendar/events/{eventId}
+        await apiClient.delete(`/users/${userId}/calendar/events/${selectedEvent.eventId}`);
+        
+        // 로컬 상태에서 제거
+        setEvents(events.filter(ev => ev.id !== selectedEvent.id));
+        closeModal();
+      } catch (error) {
+        console.error("이벤트 삭제 실패:", error);
+        console.error("에러 응답:", error.response?.data);
+        alert(`이벤트 삭제 중 오류가 발생했습니다: ${error.response?.data?.message || error.message}`);
+      }
     }
   };
 
