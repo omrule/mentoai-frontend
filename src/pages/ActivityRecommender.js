@@ -238,15 +238,10 @@ function ActivityRecommender() {
                         📊 역량 분석 결과
                       </h3>
                       
-                      <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', marginBottom: '20px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px' }}>
                         <div style={{ textAlign: 'center' }}>
                           <div style={{ fontSize: '0.9rem', color: '#666' }}>나의 점수</div>
-                          <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#007bff' }}>{userScore.toFixed(1)}점</div>
-                        </div>
-                        <div style={{ fontSize: '1.5rem', color: '#aaa' }}>VS</div>
-                        <div style={{ textAlign: 'center' }}>
-                          <div style={{ fontSize: '0.9rem', color: '#666' }}>합격 기준(예상)</div>
-                          <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#28a745' }}>{targetScore}점</div>
+                          <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#007bff' }}>{userScore.toFixed(1)}점</div>
                         </div>
                       </div>
 
