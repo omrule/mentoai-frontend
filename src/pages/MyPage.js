@@ -418,12 +418,12 @@ function MyPage() {
         {/* --- 2. 기술 스택 섹션 --- */}
         <div className="form-section">
           <h3>기술 스택</h3>
-          <div className="form-grid skill-grid">
-            <div className="form-group">
+          <div className="form-grid skill-grid" style={{ display: 'flex', alignItems: 'flex-end', gap: '10px' }}>
+            <div className="form-group" style={{ flex: 3 }}>
               <label>기술 이름</label>
               <input type="text" placeholder="예: React" value={currentSkill.name} onChange={(e) => setCurrentSkill({ ...currentSkill, name: e.target.value })} />
             </div>
-            <div className="form-group">
+            <div className="form-group" style={{ flex: 2 }}>
               <label>수준</label>
               <CustomSelect
                 options={skillOptions}
@@ -431,7 +431,14 @@ function MyPage() {
                 onChange={(newValue) => setCurrentSkill({ ...currentSkill, level: newValue })}
               />
             </div>
-            <button type="button" className="add-item-btn grid-align-end" onClick={handleAddSkill}>추가</button>
+            <button 
+              type="button" 
+              className="add-item-btn" 
+              onClick={handleAddSkill}
+              style={{ height: '46px', marginBottom: '1px', flex: '0 0 80px' }} 
+            >
+              추가
+            </button>
           </div>
           <ul className="added-list">
             {skills.map((skill, index) => (
@@ -481,24 +488,34 @@ function MyPage() {
           </ul>
         </div>
 
-        {/* --- 4. 증빙 자료 섹션 --- */}
+        {/* --- 4. 증빙 자료 섹션 (제목 변경 및 레이아웃 조정) --- */}
         <div className="form-section">
-          <h3>증빙 자료</h3>
-          <div className="form-group">
-            <label>자격증</label>
-            <div className="input-group">
-              <input type="text" placeholder="자격증 이름 (예: 정보처리기사)" value={currentCert} onChange={(e) => setCurrentCert(e.target.value)} />
-              <button type="button" className="add-item-btn" onClick={handleAddCert}>추가</button>
-            </div>
-            <ul className="added-list">
-              {evidence.certifications.map((cert, index) => (
-                <li key={index} className="added-item">
-                  {cert}
-                  <button type="button" className="remove-item-btn" onClick={() => handleRemoveCert(index)}>×</button>
-                </li>
-              ))}
-            </ul>
+          <h3 style={{ marginBottom: '15px' }}>자격증</h3>
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+            <input 
+              type="text" 
+              placeholder="자격증 이름 (예: 정보처리기사)" 
+              value={currentCert} 
+              onChange={(e) => setCurrentCert(e.target.value)} 
+              style={{ flex: 1 }}
+            />
+            <button 
+              type="button" 
+              className="add-item-btn" 
+              onClick={handleAddCert}
+              style={{ height: '46px', flex: '0 0 80px' }}
+            >
+              추가
+            </button>
           </div>
+          <ul className="added-list">
+            {evidence.certifications.map((cert, index) => (
+              <li key={index} className="added-item">
+                {cert}
+                <button type="button" className="remove-item-btn" onClick={() => handleRemoveCert(index)}>×</button>
+              </li>
+            ))}
+          </ul>
         </div>
         {/* ... (폼 섹션 끝) ... */}
 
