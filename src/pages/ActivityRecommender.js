@@ -111,43 +111,47 @@ function ActivityRecommender() {
     setRoleFitData(null);
 
     try {
-      // 2-1. RoleFitScore 계산 (수정: GET /job-postings/{jobId}/score)
+      // 2-1. 공고 적합도 점수 계산 (POST /job-postings/{jobId}/score)
       console.log(`[ActivityRecommender] 공고 #${job.jobId}에 대한 분석 시작`);
 
-      const roleFitResponse = await apiClient.get(
-        `/job-postings/${job.jobId}/score`,
-        { params: { userId } }
+      const roleFitResponse = await apiClient.post(
+        `/job-postings/${job.jobId}/score`
       );
 
-      console.log('[ActivityRecommender] RoleFit 결과:', roleFitResponse.data);
+      console.log('[ActivityRecommender] 점수 계산 결과:', roleFitResponse.data);
 
       if (roleFitResponse.data) {
         setRoleFitData(roleFitResponse.data);
-        setUserScore(roleFitResponse.data.roleFitScore);
-        setTargetScore(roleFitResponse.data.targetJobScore || 90);
-      }
-
-      // 2-2. 추천 공모전/대회 (Improvements) 조회
-      // API 응답의 target 또는 공고의 targetRoles 활용
-      const targetRoleId = roleFitResponse.data?.target || job.targetRoles?.[0]?.targetRoleId;
-
-      if (targetRoleId) {
-        const improvementsResponse = await apiClient.get(
-          `/users/${userId}/improvements`,
-          {
-            params: {
-              roleId: targetRoleId,
-              size: 5
-            }
+        // JobFitScoreResponse 스키마: totalScore 사용
+        setUserScore(roleFitResponse.data.totalScore);
+        setTargetScore(90); // 기준 점수는 고정 (백엔드에서 제공하지 않음)
+        
+        // JobFitScoreResponse에 improvements 배열이 포함되어 있음
+        if (roleFitResponse.data.improvements && roleFitResponse.data.improvements.length > 0) {
+          setImprovements(roleFitResponse.data.improvements);
+          console.log('[ActivityRecommender] 개선 제안:', roleFitResponse.data.improvements);
+        } else {
+          // improvements가 없으면 별도 API 호출
+          const targetRoleId = job.targetRoles?.[0]?.targetRoleId;
+          if (targetRoleId) {
+            const improvementsResponse = await apiClient.get(
+              `/users/${userId}/improvements`,
+              {
+                params: {
+                  roleId: targetRoleId,
+                  size: 5
+                }
+              }
+            );
+            console.log('[ActivityRecommender] 추천 활동(별도 조회):', improvementsResponse.data);
+            setImprovements(improvementsResponse.data || []);
           }
-        );
-        console.log('[ActivityRecommender] 추천 활동(Improvements):', improvementsResponse.data);
-        setImprovements(improvementsResponse.data || []);
+        }
       }
 
     } catch (error) {
       console.error('[ActivityRecommender] 분석 실패:', error);
-      // alert('공고 분석 중 오류가 발생했습니다.'); // 사용자 경험을 위해 alert 제거하거나 토스트로 변경 권장
+      console.error('[ActivityRecommender] 에러 상세:', error.response?.data || error.message);
     } finally {
       setIsAnalyzing(false);
     }
