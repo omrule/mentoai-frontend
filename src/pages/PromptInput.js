@@ -47,18 +47,21 @@ function PromptInput() {
   // 1. 초기 히스토리 로드 (GET /recommend/chats)
   useEffect(() => {
     const fetchHistory = async () => {
+      console.log('[PromptInput] 초기 히스토리 로드 시작...');
       try {
         const response = await apiClient.get('/recommend/chats');
-        console.log('[PromptInput] 히스토리 로드:', response.data);
+        console.log('[PromptInput] 히스토리 응답:', response.data);
         if (Array.isArray(response.data)) {
           // 날짜 내림차순 정렬
           const sorted = response.data.sort((a, b) => 
             new Date(b.createdAt) - new Date(a.createdAt)
           );
           setChatHistory(sorted);
+          console.log('[PromptInput] ✅ 히스토리 로드 완료:', sorted.length + '개');
         }
       } catch (error) {
-        console.error('[PromptInput] 히스토리 로드 실패:', error);
+        console.error('[PromptInput] ❌ 히스토리 로드 실패:', error);
+        console.error('[PromptInput] 에러 상세:', error.response?.data || error.message);
       }
     };
     fetchHistory();
@@ -123,6 +126,7 @@ function PromptInput() {
 
   // 3. 새 채팅 시작
   const handleNewChat = () => {
+    console.log('[PromptInput] 새 채팅 시작');
     setActiveChatId(null);
     setMessages([
       { role: 'ai', content: '새로운 대화를 시작합니다. 무엇을 도와드릴까요?' }
@@ -144,6 +148,9 @@ function PromptInput() {
     setPrompt('');
     setIsLoading(true);
 
+    console.log('[PromptInput] ===== 추천 요청 시작 =====');
+    console.log('[PromptInput] 사용자 질문:', currentPrompt);
+
     try {
       const userId = getUserIdFromStorage();
       if (!userId) {
@@ -157,21 +164,20 @@ function PromptInput() {
         useProfileHints: true
       };
 
+      console.log('[PromptInput] 요청 데이터:', requestBody);
+
       // POST /recommend 호출
       const response = await apiClient.post('/recommend', requestBody);
-      console.log('[PromptInput] 응답:', response.data);
+      console.log('[PromptInput] ✅ 응답 성공:', response.data);
 
       // 응답 처리
       const newAiMessages = [];
       
       // items가 있으면 추천 활동 카드 생성
       if (response.data && response.data.items && response.data.items.length > 0) {
+        console.log('[PromptInput] 추천 아이템 개수:', response.data.items.length);
         
-        // 첫 번째 메시지로 요약/안내 문구가 있다면 좋겠지만, API가 바로 items를 주므로
-        // 필요시 "다음과 같은 활동을 추천합니다" 메시지 추가 가능.
-        // 여기서는 바로 카드들을 보여줌.
-
-        response.data.items.forEach(item => {
+        response.data.items.forEach((item, idx) => {
           let tags = [];
           if (item.activity.tags && item.activity.tags.length > 0) {
             tags = item.activity.tags.map(tag => 
@@ -182,13 +188,14 @@ function PromptInput() {
           newAiMessages.push({
             role: 'ai',
             title: item.activity.title,
-            content: item.reason || item.activity.summary, // 이유 또는 요약 표시
+            content: item.reason || item.activity.summary,
             tags: tags
           });
+          console.log(`[PromptInput] 아이템 ${idx + 1}:`, item.activity.title);
         });
 
       } else {
-        // 추천 없음
+        console.log('[PromptInput] ⚠️ 추천 결과 없음');
         newAiMessages.push({ 
           role: 'ai', 
           content: '관련된 추천 활동을 찾지 못했습니다. 조금 더 구체적으로 질문해 주세요.' 
@@ -197,33 +204,44 @@ function PromptInput() {
 
       setMessages(prev => [...prev, ...newAiMessages]);
 
-      // 4. 채팅 후 히스토리 갱신 (새로 생성된 로그 확인)
-      // 비동기로 목록 다시 불러오기
-      try {
-        const historyResponse = await apiClient.get('/recommend/chats');
-        if (Array.isArray(historyResponse.data)) {
-          const sorted = historyResponse.data.sort((a, b) => 
-            new Date(b.createdAt) - new Date(a.createdAt)
-          );
-          setChatHistory(sorted);
-          
-          // 방금 생성된 로그(가장 최신)를 active로 설정할 수도 있음
-          if (sorted.length > 0) {
-            // setActiveChatId(sorted[0].logId); // UX 선택 사항
+      // 4. 채팅 후 히스토리 갱신 (약간의 딜레이 후 재조회)
+      console.log('[PromptInput] 히스토리 갱신 대기 중...');
+      setTimeout(async () => {
+        try {
+          console.log('[PromptInput] 히스토리 재조회 시작...');
+          const historyResponse = await apiClient.get('/recommend/chats');
+          if (Array.isArray(historyResponse.data)) {
+            const sorted = historyResponse.data.sort((a, b) => 
+              new Date(b.createdAt) - new Date(a.createdAt)
+            );
+            setChatHistory(sorted);
+            console.log('[PromptInput] ✅ 히스토리 갱신 완료:', sorted.length + '개');
+            
+            // 방금 생성된 로그를 활성화 (새 채팅이었던 경우)
+            if (sorted.length > 0 && !activeChatId) {
+              setActiveChatId(sorted[0].logId);
+              console.log('[PromptInput] 새 채팅 활성화:', sorted[0].logId);
+            }
           }
+        } catch (histError) {
+          console.error('[PromptInput] ❌ 히스토리 갱신 실패:', histError);
         }
-      } catch (histError) {
-        console.warn('히스토리 갱신 실패:', histError);
-      }
+      }, 1000); // 1초 대기 (백엔드 저장 시간 고려)
 
     } catch (error) {
-      console.error('[PromptInput] 추천 실패:', error);
+      console.error('[PromptInput] ❌ 추천 요청 실패:', error);
+      console.error('[PromptInput] 에러 상세:', error.response?.data || error.message);
+      
       setMessages(prev => [
         ...prev,
-        { role: 'ai', content: `오류가 발생했습니다: ${error.message}` }
+        { role: 'ai', content: `오류가 발생했습니다: ${error.response?.data?.message || error.message}` }
       ]);
+      
+      // 사용자에게 알림
+      alert(`추천 요청 실패: ${error.response?.data?.message || error.message}`);
     } finally {
       setIsLoading(false);
+      console.log('[PromptInput] ===== 요청 종료 =====');
     }
   };
 
