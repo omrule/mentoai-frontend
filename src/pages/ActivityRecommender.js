@@ -196,8 +196,8 @@ function ActivityRecommender() {
                   <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{job.title}</div>
                   <div style={{ fontSize: '0.9rem', color: '#555' }}>{job.companyName}</div>
                   <div style={{ fontSize: '0.85rem', color: '#888', marginTop: '4px' }}>
-                    {job.workPlace ? `${job.workPlace} | ` : ''} 
-                    {job.deadline ? `~${new Date(job.deadline).toLocaleDateString()}` : '상시 채용'}
+                    {job.workPlace} 
+                    {job.deadline && ` | ~${new Date(job.deadline).toLocaleDateString()}`}
                   </div>
                 </li>
               ))}
