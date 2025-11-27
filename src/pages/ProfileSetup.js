@@ -224,17 +224,9 @@ function ProfileSetup() {
           <h3>기술 스택</h3>
           {/* [수정] UI 깨짐 문제 해결: Flexbox 적용 */}
           <div className="form-grid skill-grid" style={{ display: 'flex', alignItems: 'flex-end', gap: '10px' }}>
-            <div className="form-group" style={{ flex: 4 }}>
+            <div className="form-group" style={{ flex: 1 }}>
               <label>기술 이름</label>
               <input type="text" placeholder="예: React" value={currentSkill.name} onChange={(e) => setCurrentSkill({ ...currentSkill, name: e.target.value })} />
-            </div>
-            <div className="form-group" style={{ flex: 1 }}>
-              <label>수준</label>
-              <CustomSelect
-                options={skillOptions}
-                value={currentSkill.level}
-                onChange={(newValue) => setCurrentSkill({ ...currentSkill, level: newValue })}
-              />
             </div>
             <button 
               type="button" 
@@ -248,7 +240,7 @@ function ProfileSetup() {
           <ul className="added-list">
             {skills.map((skill, index) => (
               <li key={index} className="added-item">
-                {skill.name} ({skill.level})
+                {skill.name}
                 <button type="button" className="remove-item-btn" onClick={() => handleRemoveSkill(index)}>×</button>
               </li>
             ))}

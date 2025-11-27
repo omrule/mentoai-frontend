@@ -300,7 +300,7 @@
 .grid-align-end {
   align-self: end;
   width: auto; 
-  height: 37px;
+  height: 40px; /* [수정] 높이 통일 (37px -> 40px) */
   justify-self: end;
 }
 /* 2x2 그리드 내의 버튼은 너비를 100%로 설정 */

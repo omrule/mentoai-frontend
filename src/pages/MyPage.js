@@ -419,17 +419,9 @@ function MyPage() {
         <div className="form-section">
           <h3>기술 스택</h3>
           <div className="form-grid skill-grid" style={{ display: 'flex', alignItems: 'flex-end', gap: '10px' }}>
-            <div className="form-group" style={{ flex: 4 }}>
+            <div className="form-group" style={{ flex: 1 }}>
               <label>기술 이름</label>
               <input type="text" placeholder="예: React" value={currentSkill.name} onChange={(e) => setCurrentSkill({ ...currentSkill, name: e.target.value })} />
-            </div>
-            <div className="form-group" style={{ flex: 1 }}>
-              <label>수준</label>
-              <CustomSelect
-                options={skillOptions}
-                value={currentSkill.level}
-                onChange={(newValue) => setCurrentSkill({ ...currentSkill, level: newValue })}
-              />
             </div>
             <button 
               type="button" 
@@ -443,7 +435,7 @@ function MyPage() {
           <ul className="added-list">
             {skills.map((skill, index) => (
               <li key={index} className="added-item">
-                {skill.name} ({skill.level})
+                {skill.name}
                 <button type="button" className="remove-item-btn" onClick={() => handleRemoveSkill(index)}>×</button>
               </li>
             ))}

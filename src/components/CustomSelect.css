@@ -14,7 +14,7 @@
   cursor: pointer;
   position: relative;
   user-select: none;
-  height: 37px;
+  height: 40px;
   box-sizing: border-box;
   
   /* [수정] 글자 세로 정렬을 위한 flex 속성 */
